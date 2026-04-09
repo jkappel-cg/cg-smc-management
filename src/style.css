@@ -1,3 +1,23 @@
+/* Graphik */
+@font-face { font-family: 'Graphik'; src: url('/fonts/Graphik-Thin-Web.woff2') format('woff2'); font-weight: 100; font-style: normal; }
+@font-face { font-family: 'Graphik'; src: url('/fonts/Graphik-Extralight-Web.woff2') format('woff2'); font-weight: 200; font-style: normal; }
+@font-face { font-family: 'Graphik'; src: url('/fonts/Graphik-Light-Web.woff2') format('woff2'); font-weight: 300; font-style: normal; }
+@font-face { font-family: 'Graphik'; src: url('/fonts/Graphik-Regular-Web.woff2') format('woff2'); font-weight: 400; font-style: normal; }
+@font-face { font-family: 'Graphik'; src: url('/fonts/Graphik-Medium-Web.woff2') format('woff2'); font-weight: 500; font-style: normal; }
+@font-face { font-family: 'Graphik'; src: url('/fonts/Graphik-Semibold-Web.woff2') format('woff2'); font-weight: 600; font-style: normal; }
+@font-face { font-family: 'Graphik'; src: url('/fonts/Graphik-Bold-Web.woff2') format('woff2'); font-weight: 700; font-style: normal; }
+@font-face { font-family: 'Graphik'; src: url('/fonts/Graphik-Black-Web.woff2') format('woff2'); font-weight: 900; font-style: normal; }
+
+/* Rund Display */
+@font-face { font-family: 'RundDisplay'; src: url('/fonts/RundDisplay-Thin.woff2') format('woff2'); font-weight: 100; font-style: normal; }
+@font-face { font-family: 'RundDisplay'; src: url('/fonts/RundDisplay-Light.woff2') format('woff2'); font-weight: 300; font-style: normal; }
+@font-face { font-family: 'RundDisplay'; src: url('/fonts/RundDisplay-Regular.woff2') format('woff2'); font-weight: 400; font-style: normal; }
+@font-face { font-family: 'RundDisplay'; src: url('/fonts/RundDisplay-Medium.woff2') format('woff2'); font-weight: 500; font-style: normal; }
+@font-face { font-family: 'RundDisplay'; src: url('/fonts/RundDisplay-SemiBold.woff2') format('woff2'); font-weight: 600; font-style: normal; }
+@font-face { font-family: 'RundDisplay'; src: url('/fonts/RundDisplay-Bold.woff2') format('woff2'); font-weight: 700; font-style: normal; }
+@font-face { font-family: 'RundDisplay'; src: url('/fonts/RundDisplay-ExtraBold.woff2') format('woff2'); font-weight: 800; font-style: normal; }
+@font-face { font-family: 'RundDisplay'; src: url('/fonts/RundDisplay-Black.woff2') format('woff2'); font-weight: 900; font-style: normal; }
+
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -5,7 +25,7 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', system-ui, sans-serif;
+  font-family: 'Graphik', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   background: #f0f2f5;
   color: #1a1a1a;
   font-size: 14px;

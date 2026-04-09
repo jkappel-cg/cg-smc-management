@@ -47,8 +47,8 @@ function ConditionRow({ label, value, badge }) {
         <span style={{ fontSize: 12, color: '#6b7280' }}>{label}</span>
         <span style={{
           fontSize: 11,
-          background: '#ffd6d6',
-          color: '#cc0000',
+          background: '#FFE2E2',
+          color: '#0D1722',
           borderRadius: 4,
           padding: '2px 8px',
           fontWeight: 500,

@@ -6,6 +6,10 @@ import CardSelector from '../components/CardSelector.jsx'
 import SelectInput from '../components/SelectInput.jsx'
 import VehicleMakes from '../components/VehicleMakes.jsx'
 import ConditionAdjustments from '../components/ConditionAdjustments.jsx'
+import ConditionSliders from '../components/ConditionSliders.jsx'
+import GuardrailSlider from '../components/GuardrailSlider.jsx'
+import SnappingAgeSlider from '../components/SnappingAgeSlider.jsx'
+import LaterConcepts from '../components/LaterConcepts.jsx'
 import SaveBar from '../components/SaveBar.jsx'
 
 const BOOK_VALUE_OPTIONS = [
@@ -110,6 +114,12 @@ export default function SMCStrategy() {
   const [maxMileage, setMaxMileage] = useState('200000')
   const [maxAge, setMaxAge] = useState('none')
   const [excludedMakes, setExcludedMakes] = useState([])
+  // Next phase slider state
+  const [maxOfferSlider, setMaxOfferSlider] = useState(80000)
+  const [maxMileageSlider, setMaxMileageSlider] = useState(200000)
+  const [maxAgeStop, setMaxAgeStop] = useState(2)
+  // Later phase state
+  const [biddingRadius, setBiddingRadius] = useState(175)
 
   function handleSave() {
     // Visual prototype — no-op
@@ -147,18 +157,20 @@ export default function SMCStrategy() {
             ← Back
           </a>
           <div>
-            <h1 style={{ fontSize: 20, fontWeight: 700, color: '#1a1a1a', marginBottom: 4 }}>
+            <h1 style={{ fontSize: 20, fontWeight: 700, color: '#1a1a1a', marginBottom: 4, fontFamily: "'RundDisplay', sans-serif" }}>
               Sell My Car Strategy
             </h1>
-            <p style={{ fontSize: 13, color: '#888' }}>
-              Adjust your global bidding rules to refine your strategy
+            <p style={{ fontSize: 13, color: '#0D1722' }}>
+              {phase === 'Next' || phase === 'Later'
+                ? 'Adjust your global and custom bidding rules to refine your strategy'
+                : 'Adjust your global bidding rules to refine your strategy'}
             </p>
           </div>
         </div>
 
         {/* Section 1 — Bidding Strategy */}
         <SectionCard title="Bidding strategy">
-          <FieldBlock label="Book value source">
+          <FieldBlock label="Book value source" description="The valuation data used to calculate your offers">
             <CardSelector
               options={BOOK_VALUE_OPTIONS}
               value={bookValue}
@@ -166,7 +178,7 @@ export default function SMCStrategy() {
             />
           </FieldBlock>
 
-          <FieldBlock label="Buying approach">
+          <FieldBlock label="Buying approach" description="Controls how aggressively your offers are priced relative to market value">
             <CardSelector
               options={BUYING_APPROACH_OPTIONS}
               value={buyingApproach}
@@ -174,43 +186,75 @@ export default function SMCStrategy() {
             />
           </FieldBlock>
 
-          <FieldBlock label="Max offer amount" last inline>
-            <SelectInput
-              options={MAX_OFFER_OPTIONS}
-              value={maxOffer}
-              onChange={setMaxOffer}
-              width={240}
-            />
-          </FieldBlock>
+          {phase !== 'MVP' ? (
+            <FieldBlock label="Max offer amount" description="Offers won't exceed this amount regardless of vehicle value" last>
+              <GuardrailSlider
+                value={maxOfferSlider}
+                onChange={setMaxOfferSlider}
+                min={20000} max={150000} step={1000}
+                recLo={60000} recHi={80000}
+                formatValue={v => `$${v / 1000}k`}
+                formatLabel={v => `$${v / 1000}k`}
+              />
+            </FieldBlock>
+          ) : (
+            <FieldBlock label="Max offer amount" description="Offers won't exceed this amount regardless of vehicle value" last inline>
+              <SelectInput
+                options={MAX_OFFER_OPTIONS}
+                value={maxOffer}
+                onChange={setMaxOffer}
+                width={300}
+              />
+            </FieldBlock>
+          )}
         </SectionCard>
 
         {/* Section 2 — Bidding Criteria */}
         <SectionCard title="Bidding criteria">
-          <FieldBlock
-            label="Max mileage limit"
-            description="Vehicles above this mileage won't receive offers"
-            inline
-          >
-            <SelectInput
-              options={MAX_MILEAGE_OPTIONS}
-              value={maxMileage}
-              onChange={setMaxMileage}
-              width={260}
-            />
-          </FieldBlock>
+          {phase !== 'MVP' ? (
+            <FieldBlock label="Max mileage limit" description="Vehicles above this mileage won't receive offers">
+              <GuardrailSlider
+                value={maxMileageSlider}
+                onChange={setMaxMileageSlider}
+                min={50000} max={300000} step={5000}
+                recLo={50000} recHi={200000}
+                formatValue={v => `${v / 1000}k mi`}
+                formatLabel={v => `${v / 1000}k`}
+              />
+            </FieldBlock>
+          ) : (
+            <FieldBlock
+              label="Max mileage limit"
+              description="Vehicles above this mileage won't receive offers"
+              inline
+            >
+              <SelectInput
+                options={MAX_MILEAGE_OPTIONS}
+                value={maxMileage}
+                onChange={setMaxMileage}
+                width={310}
+              />
+            </FieldBlock>
+          )}
 
-          <FieldBlock
-            label="Max vehicle age"
-            description="Vehicles older than this won't receive offers"
-            inline
-          >
-            <SelectInput
-              options={MAX_AGE_OPTIONS}
-              value={maxAge}
-              onChange={setMaxAge}
-              width={320}
-            />
-          </FieldBlock>
+          {phase !== 'MVP' ? (
+            <FieldBlock label="Max vehicle age" description="Vehicles older than this won't receive offers">
+              <SnappingAgeSlider value={maxAgeStop} onChange={setMaxAgeStop} />
+            </FieldBlock>
+          ) : (
+            <FieldBlock
+              label="Max vehicle age"
+              description="Vehicles older than this won't receive offers"
+              inline
+            >
+              <SelectInput
+                options={MAX_AGE_OPTIONS}
+                value={maxAge}
+                onChange={setMaxAge}
+                width={320}
+              />
+            </FieldBlock>
+          )}
 
           <FieldBlock
             label="Vehicle makes"
@@ -227,9 +271,30 @@ export default function SMCStrategy() {
         {/* Section 3 — Vehicle Condition Adjustments */}
         <SectionCard title="Vehicle condition adjustments">
           <FieldBlock last>
-            <ConditionAdjustments />
+            {phase !== 'MVP' ? <ConditionSliders /> : <ConditionAdjustments />}
           </FieldBlock>
         </SectionCard>
+
+        {/* Section 4 — Custom Rules (Next + Later) */}
+        {phase !== 'MVP' && (
+          <SectionCard title="Custom rules">
+            <div style={{ padding: '24px 0', textAlign: 'center' }}>
+              <span style={{ fontSize: 13, color: '#9ca3af' }}>
+                Custom rules coming soon. Add vehicle-specific overrides for makes, models, and more.
+              </span>
+            </div>
+          </SectionCard>
+        )}
+
+        {/* Later concepts */}
+        {phase === 'Later' && (
+          <LaterConcepts
+            maxAgeStop={maxAgeStop}
+            onAgeStopChange={setMaxAgeStop}
+            biddingRadius={biddingRadius}
+            onBiddingRadiusChange={setBiddingRadius}
+          />
+        )}
 
         {/* Bottom save bar */}
         <SaveBar onSave={handleSave} />

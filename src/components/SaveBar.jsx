@@ -1,13 +1,17 @@
-export default function SaveBar({ onSave }) {
+export default function SaveBar({ onSave, navWidth = 240 }) {
   return (
     <div style={{
+      position: 'fixed',
+      bottom: 0,
+      left: navWidth,
+      right: 0,
       borderTop: '1px solid #e0e0e0',
       padding: '16px 24px',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
       background: '#fff',
-      marginTop: 8,
+      zIndex: 100,
     }}>
       <span style={{ fontSize: 13, color: '#6b7280' }}>
         Changes apply immediately to new Sell My Car leads.

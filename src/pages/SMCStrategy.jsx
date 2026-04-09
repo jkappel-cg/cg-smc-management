@@ -116,12 +116,27 @@ export default function SMCStrategy() {
   }
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: '#f0f2f5',
-      padding: '24px',
-    }}>
-      <div style={{ maxWidth: 900, margin: '0 auto' }}>
+    <div style={{ display: 'flex', minHeight: '100vh' }}>
+
+      {/* Left nav placeholder */}
+      <div style={{
+        width: 240,
+        flexShrink: 0,
+        background: '#0d1722',
+        position: 'sticky',
+        top: 0,
+        height: '100vh',
+      }} />
+
+      {/* Main content area */}
+      <div style={{
+        flex: 1,
+        background: '#F4F6F9',
+        padding: '24px 24px 80px',
+        display: 'flex',
+        justifyContent: 'center',
+      }}>
+      <div style={{ width: '100%', maxWidth: 1164 }}>
 
         {/* Phase toggle (prototype only) */}
         <PhaseToggle phase={phase} onChange={setPhase} />
@@ -131,16 +146,13 @@ export default function SMCStrategy() {
           <a href="#" style={{ fontSize: 13, color: '#333', textDecoration: 'underline', display: 'inline-flex', alignItems: 'center', gap: 4, marginBottom: 8 }}>
             ← Back
           </a>
-          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-            <div>
-              <h1 style={{ fontSize: 20, fontWeight: 700, color: '#1a1a1a', marginBottom: 4 }}>
-                Sell My Car Strategy
-              </h1>
-              <p style={{ fontSize: 13, color: '#888' }}>
-                Adjust your global bidding rules to refine your strategy
-              </p>
-            </div>
-            <SaveButton onClick={handleSave} />
+          <div>
+            <h1 style={{ fontSize: 20, fontWeight: 700, color: '#1a1a1a', marginBottom: 4 }}>
+              Sell My Car Strategy
+            </h1>
+            <p style={{ fontSize: 13, color: '#888' }}>
+              Adjust your global bidding rules to refine your strategy
+            </p>
           </div>
         </div>
 
@@ -162,7 +174,7 @@ export default function SMCStrategy() {
             />
           </FieldBlock>
 
-          <FieldBlock label="Max offer amount" last>
+          <FieldBlock label="Max offer amount" last inline>
             <SelectInput
               options={MAX_OFFER_OPTIONS}
               value={maxOffer}
@@ -177,6 +189,7 @@ export default function SMCStrategy() {
           <FieldBlock
             label="Max mileage limit"
             description="Vehicles above this mileage won't receive offers"
+            inline
           >
             <SelectInput
               options={MAX_MILEAGE_OPTIONS}
@@ -189,6 +202,7 @@ export default function SMCStrategy() {
           <FieldBlock
             label="Max vehicle age"
             description="Vehicles older than this won't receive offers"
+            inline
           >
             <SelectInput
               options={MAX_AGE_OPTIONS}
@@ -220,6 +234,7 @@ export default function SMCStrategy() {
         {/* Bottom save bar */}
         <SaveBar onSave={handleSave} />
 
+      </div>
       </div>
     </div>
   )

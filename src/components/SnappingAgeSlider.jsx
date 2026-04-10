@@ -2,6 +2,7 @@ const STOPS = ['2 yrs', '5 yrs', '10 yrs', 'No limit']
 const STOP_DISPLAYS = ['Up to 2 years old', 'Up to 5 years old', 'Up to 10 years old', 'No limit']
 const REC_MAX_INDEX = 2 // "10 yrs" is the last recommended stop
 const GREEN = '#078A0B'
+const GREEN_TRACK = '#09AD0E'
 const AMBER = '#BA7517'
 
 export default function SnappingAgeSlider({ value, onChange }) {
@@ -12,42 +13,42 @@ export default function SnappingAgeSlider({ value, onChange }) {
 
   return (
     <div>
-      {/* Header: badge + display label */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+      {/* Header: badge left, display text right */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
         <span style={{
-          fontSize: 11,
-          background: inRange ? '#c8f0c9' : '#fff3e0',
-          color: inRange ? GREEN : AMBER,
+          fontSize: 12,
+          background: inRange ? '#DCF7DD' : '#FFF1C0',
+          color: '#0D1722',
           borderRadius: 4, padding: '2px 8px', fontWeight: 500,
         }}>
           {inRange ? 'Recommended' : 'Outside recommended range'}
         </span>
-        <span style={{ fontSize: 15, fontWeight: 500, color: '#1a1a1a' }}>
+        <span style={{ fontSize: 16, fontWeight: 400, color: '#0D1722' }}>
           {STOP_DISPLAYS[value]}
         </span>
       </div>
 
       {/* Track */}
-      <div style={{ position: 'relative', height: 28 }}>
+      <div style={{ position: 'relative', height: 32 }}>
         {/* Background track */}
         <div style={{
           position: 'absolute', top: '50%', left: 0, right: 0,
-          height: 5, background: '#e0e0e0', borderRadius: 3,
+          height: 10, background: '#E5E5E5', borderRadius: 5,
           transform: 'translateY(-50%)',
         }} />
         {/* Green zone: left → 10 yrs stop */}
         <div style={{
           position: 'absolute', top: '50%',
           left: 0, width: `${recPct}%`,
-          height: 5, background: GREEN, opacity: 0.45, borderRadius: 3,
+          height: 10, background: GREEN_TRACK, borderRadius: 5,
           transform: 'translateY(-50%)', pointerEvents: 'none',
         }} />
         {/* Visual thumb */}
         <div style={{
           position: 'absolute', top: '50%',
           left: `${valPct}%`,
-          width: 20, height: 20,
-          background: '#fff', border: `2px solid ${thumbColor}`, borderRadius: '50%',
+          width: 27, height: 27,
+          background: '#fff', border: `3px solid ${thumbColor}`, borderRadius: '50%',
           transform: 'translate(-50%, -50%)', pointerEvents: 'none',
         }} />
         {/* Native input */}
@@ -76,8 +77,8 @@ export default function SnappingAgeSlider({ value, onChange }) {
               right: isLast ? 0 : 'auto',
               transform: (!isFirst && !isLast) ? 'translateX(-50%)' : 'none',
               fontSize: 12,
-              color: isRec ? GREEN : '#9ca3af',
-              fontWeight: isRec ? 600 : 400,
+              color: isRec ? GREEN : '#5E6976',
+              fontWeight: 400,
             }}>
               {stop}
             </span>
@@ -89,8 +90,8 @@ export default function SnappingAgeSlider({ value, onChange }) {
       {value === 3 && (
         <div style={{
           marginTop: 10, padding: '8px 12px',
-          background: '#fff3e0', border: '1px solid #f5c800',
-          borderRadius: 6, fontSize: 13, color: AMBER,
+          background: '#FFF1C0', border: '1px solid #f5c800',
+          borderRadius: 6, fontSize: 14, color: '#0D1722',
         }}>
           ⚠ No vehicle age limit may reduce offer accuracy for older vehicles.
         </div>

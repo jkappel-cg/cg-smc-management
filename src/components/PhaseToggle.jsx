@@ -5,10 +5,7 @@ export default function PhaseToggle({ phase, onChange }) {
     <div style={{
       display: 'flex',
       alignItems: 'center',
-      gap: 10,
-      marginBottom: 16,
     }}>
-      <span style={{ fontSize: 13, color: '#b625ce', fontWeight: 600 }}>View</span>
       <div style={{
         display: 'flex',
         border: '1px solid #b625ce',
@@ -21,7 +18,7 @@ export default function PhaseToggle({ phase, onChange }) {
             onClick={() => onChange(p)}
             style={{
               padding: '5px 14px',
-              fontSize: 13,
+              fontSize: 14,
               fontWeight: 500,
               background: phase === p ? '#b625ce' : 'transparent',
               color: phase === p ? '#fff' : '#b625ce',

@@ -37,7 +37,7 @@ export default function VehicleMakes({ excluded, onChange }) {
             onClick={() => { setMode(m); setSearch('') }}
             style={{
               padding: '6px 16px',
-              fontSize: 13,
+              fontSize: 14,
               background: mode === m ? '#0763D3' : 'transparent',
               color: mode === m ? '#fff' : '#555',
               border: 'none',
@@ -84,13 +84,13 @@ export default function VehicleMakes({ excluded, onChange }) {
                     onClick={() => toggleExclude(make)}
                     style={{
                       padding: '4px 10px',
-                      fontSize: 13,
+                      fontSize: 14,
                       borderRadius: 4,
                       border: isExcluded
                         ? '1px solid #ffaaaa'
                         : '1px solid #cccccc',
                       background: isExcluded ? '#ffd6d6' : '#f5f5f5',
-                      color: isExcluded ? '#cc0000' : '#1a1a1a',
+                      color: isExcluded ? '#cc0000' : '#0D1722',
                       textDecoration: isExcluded ? 'line-through' : 'none',
                       opacity: isExcluded ? 0.75 : 1,
                       cursor: 'pointer',
@@ -113,7 +113,7 @@ export default function VehicleMakes({ excluded, onChange }) {
                   title="Click to re-include"
                   style={{
                     padding: '4px 10px',
-                    fontSize: 13,
+                    fontSize: 14,
                     borderRadius: 4,
                     border: '1px solid #ffaaaa',
                     background: '#ffd6d6',
@@ -133,11 +133,11 @@ export default function VehicleMakes({ excluded, onChange }) {
           {excluded.length >= 5 && (
             <div style={{
               padding: '10px 14px',
-              background: '#fff3e0',
+              background: '#FFF1C0',
               border: '1px solid #f5c800',
               borderRadius: 6,
-              fontSize: 13,
-              color: '#BA7517',
+              fontSize: 14,
+              color: '#0D1722',
             }}>
               ⚠ Excluding vehicle makes may reduce the number of leads you receive.
             </div>

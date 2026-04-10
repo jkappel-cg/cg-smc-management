@@ -1,14 +1,16 @@
 export default function FieldBlock({ label, description, children, last = false, inline = false }) {
+  const borderBottom = last ? 'none' : '1px solid #f0f0f0'
+
   if (inline) {
     return (
-      <div style={{ padding: '20px 0' }}>
+      <div style={{ padding: '20px 0', borderBottom }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
-            <div style={{ fontSize: 14, fontWeight: 500, color: '#1a1a1a', marginBottom: 3 }}>
+            <div style={{ fontSize: 14, fontWeight: 500, color: '#0D1722', marginBottom: 3 }}>
               {label}
             </div>
             {description && (
-              <div style={{ fontSize: 12, color: '#6b7280' }}>
+              <div style={{ fontSize: 12, color: '#5E6976' }}>
                 {description}
               </div>
             )}
@@ -20,17 +22,19 @@ export default function FieldBlock({ label, description, children, last = false,
   }
 
   return (
-    <div style={{ padding: '20px 0' }}>
-      <div style={{ marginBottom: 12 }}>
-        <div style={{ fontSize: 14, fontWeight: 500, color: '#1a1a1a', marginBottom: 3 }}>
-          {label}
-        </div>
-        {description && (
-          <div style={{ fontSize: 12, color: '#6b7280' }}>
-            {description}
+    <div style={{ padding: '20px 0', borderBottom }}>
+      {label && (
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ fontSize: 14, fontWeight: 500, color: '#0D1722', marginBottom: 3 }}>
+            {label}
           </div>
-        )}
-      </div>
+          {description && (
+            <div style={{ fontSize: 12, color: '#5E6976' }}>
+              {description}
+            </div>
+          )}
+        </div>
+      )}
       {children}
     </div>
   )

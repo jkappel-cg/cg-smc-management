@@ -23,7 +23,7 @@ export default function InfoTooltip({ text }) {
           borderRadius: '50%',
           border: '1px solid #cccccc',
           background: '#fff',
-          fontSize: 10,
+          fontSize: 12,
           color: '#888',
           display: 'flex',
           alignItems: 'center',

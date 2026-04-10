@@ -14,18 +14,18 @@ const SECTIONS = [
       { key: 'fadedPaint',  label: 'Faded paint',       default: 750,  recLo: 500, recMax: 1000, defaultUnit: '$' },
       { key: 'rust',        label: 'Rust',              default: 1000, recLo: 700, recMax: 1200, defaultUnit: '$' },
       { key: 'hailDamage',  label: 'Hail damage',       default: 1000, recLo: 700, recMax: 1200, defaultUnit: '$' },
-      { key: 'accidents',   label: 'Accidents',         default: 5,    recLo: 3,   recMax: 15,   defaultUnit: '%',
+      { key: 'accidents',   label: 'Accidents',          default: 5,    recLo: 3,   recMax: 15,   defaultUnit: '%',
         dollarDefault: 500, dollarRecLo: 300, dollarRecMax: 1000 },
     ],
   },
   {
     header: 'Moderate impact',
     items: [
-      { key: 'roughCondition', label: 'Rough condition',    default: 300, recLo: 200, recMax: 500, defaultUnit: '$' },
-      { key: 'smoker',         label: 'Smoker',             default: 300, recLo: 150, recMax: 400, defaultUnit: '$' },
-      { key: 'dents',          label: 'Dents',              default: 300, recLo: 150, recMax: 500, defaultUnit: '$' },
-      { key: 'oneKey',         label: 'One key only',       default: 250, recLo: 150, recMax: 400, defaultUnit: '$' },
-      { key: 'mechanical',     label: 'Mechanical defects', default: 250, recLo: 150, recMax: 400, defaultUnit: '$' },
+      { key: 'roughCondition', label: 'Rough condition',   default: 300, recLo: 200, recMax: 500, defaultUnit: '$' },
+      { key: 'smoker',         label: 'Smoker',            default: 300, recLo: 150, recMax: 400, defaultUnit: '$' },
+      { key: 'dents',          label: 'Dents',             default: 300, recLo: 150, recMax: 500, defaultUnit: '$' },
+      { key: 'oneKey',         label: 'One key only',      default: 250, recLo: 150, recMax: 400, defaultUnit: '$' },
+      { key: 'mechanical',     label: 'Mechanical defects',default: 250, recLo: 150, recMax: 400, defaultUnit: '$' },
     ],
   },
   {
@@ -64,10 +64,12 @@ function initUnits() {
 // Get slider config (min/max/recLo/recHi/step) for item in a given unit
 function getConfig(item, unit) {
   if (item.dollarDefault) {
+    // Accidents: explicit values for each unit
     if (unit === '%') return { min: 0, max: 30,   step: 1,   recLo: item.recLo,       recHi: item.recMax }
     else              return { min: 0, max: item.dollarRecMax * 2, step: 50, recLo: item.dollarRecLo, recHi: item.dollarRecMax }
   }
   if (unit === '$') return { min: 0, max: item.recMax * 2, step: 50, recLo: item.recLo, recHi: item.recMax }
+  // % mode for $-native items: convert via FACTOR
   const pLo  = Math.round((item.recLo  / FACTOR) * 10) / 10
   const pHi  = Math.round((item.recMax / FACTOR) * 10) / 10
   const pMax = Math.round((item.recMax * 2 / FACTOR) * 10) / 10
@@ -111,7 +113,7 @@ function UnitToggle({ unit, onChange }) {
   )
 }
 
-const Divider = () => <div style={{ height: 1, background: '#f0f0f0', width: '100%', marginTop: 12 }} />
+const Divider = () => <div style={{ height: 1, background: '#f0f0f0', width: '50%', marginTop: 12 }} />
 
 export default function ConditionSliders() {
   const [values, setValues]       = useState(initValues)
@@ -171,63 +173,60 @@ export default function ConditionSliders() {
         Example: If a consumer selects "Bad tires," your offer is reduced by $800 based on the rules below.
       </p>
 
-      {/* 4-column grid — one column per impact section */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 24, alignItems: 'start' }}>
-        {SECTIONS.map(section => (
-          <div key={section.header}>
-            {/* Section header */}
-            <div style={{
-              fontSize: 14, fontWeight: 600, color: '#0D1722',
-              paddingBottom: 6,
-              borderBottom: '1px solid #e0e0e0',
-              marginBottom: 4,
-            }}>
-              {section.header}
-            </div>
+      {SECTIONS.map((section, si) => (
+        <div key={section.header}>
+          {/* Section header */}
+          <div style={{
+            fontSize: 14, fontWeight: 600, color: '#0D1722',
+            paddingTop: 4, paddingBottom: 6,
+            borderTop: si > 0 ? '1px solid #e0e0e0' : 'none',
+            marginTop: si > 0 ? 20 : 0,
+          }}>
+            {section.header}
+          </div>
 
-            {section.items.map((item, idx) => {
-              const isLast = idx === section.items.length - 1
+          {section.items.map((item, idx) => {
+            const isLast = idx === section.items.length - 1
 
-              /* ── "Not driveable" — no offer ── */
-              if (item.badge) return (
-                <div key={item.key} style={{ padding: '10px 0' }}>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: '#0D1722', marginBottom: 4 }}>
-                    {item.label}
-                  </div>
+            /* ── "Not driveable" — no offer ── */
+            if (item.badge) return (
+              <div key={item.key} style={{ padding: '10px 0' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: 14, fontWeight: 600, color: '#0D1722' }}>{item.label}</span>
                   <span style={{ fontSize: 12, background: '#FFE2E2', color: '#0D1722', borderRadius: 4, padding: '2px 8px', fontWeight: 400 }}>
                     No offer made
                   </span>
-                  {!isLast && <Divider />}
                 </div>
-              )
+                {!isLast && <Divider />}
+              </div>
+            )
 
-              /* ── All slider items (including No impact at value 0) ── */
-              const unit = units[item.key]
-              const val  = values[item.key]
-              const cfg  = getConfig(item, unit)
-              const { formatValue, formatLabel } = getFmt(unit)
+            /* ── All slider items (regular + No impact at 0) ── */
+            const unit = units[item.key]
+            const val  = values[item.key]
+            const cfg  = getConfig(item, unit)
+            const { formatValue, formatLabel } = getFmt(unit)
 
-              // No impact items at 0 get a neutral "No adjustment" badge
-              const isZero = item.noImpact && val === 0
-              const inRange = val >= cfg.recLo && val <= cfg.recHi
-              const badgeText = isZero ? 'No adjustment'
-                : inRange ? 'Recommended'
-                : val < cfg.recLo ? 'Below recommended'
-                : 'Above recommended'
-              const badgeBg = isZero ? '#F0F2F4'
-                : inRange ? '#DCF7DD'
-                : '#FFF1C0'
-              const badgeColor = isZero ? '#5E6976' : '#0D1722'
-              const inputDisplay = item.key in rawInputs ? rawInputs[item.key] : String(val)
+            // No impact items at 0 get a neutral "No adjustment" badge
+            const isZero = item.noImpact && val === 0
+            const inRange = val >= cfg.recLo && val <= cfg.recHi
+            const badgeText = isZero       ? 'No adjustment'
+              : inRange                    ? 'Recommended'
+              : val < cfg.recLo            ? 'Below recommended'
+              :                              'Above recommended'
+            const badgeBg    = isZero ? '#F0F2F4' : inRange ? '#DCF7DD' : '#FFF1C0'
+            const badgeColor = isZero ? '#5E6976' : '#0D1722'
+            const inputDisplay = item.key in rawInputs ? rawInputs[item.key] : String(val)
 
-              return (
-                <div key={item.key} style={{ padding: '10px 0' }}>
-                  {/* Bold label */}
-                  <div style={{ fontSize: 14, fontWeight: 600, color: '#0D1722', marginBottom: 6 }}>
-                    {item.label}
-                  </div>
-                  {/* Badge + toggle + input */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8, flexWrap: 'wrap' }}>
+            return (
+              <div key={item.key} style={{ padding: '10px 0' }}>
+                {/* Bold label at full width */}
+                <div style={{ fontSize: 14, fontWeight: 600, color: '#0D1722', marginBottom: 6 }}>
+                  {item.label}
+                </div>
+                {/* Badge + toggle + input + slider — all capped at 50% width, left-aligned */}
+                <div style={{ width: '50%' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
                     <span style={{ fontSize: 12, background: badgeBg, color: badgeColor, borderRadius: 4, padding: '2px 8px', fontWeight: 400, whiteSpace: 'nowrap' }}>
                       {badgeText}
                     </span>
@@ -243,7 +242,6 @@ export default function ConditionSliders() {
                       onMouseLeave={e => { if (document.activeElement !== e.target) e.target.style.borderColor = '#cccccc' }}
                     />
                   </div>
-                  {/* Slider — full column width */}
                   <GuardrailSlider
                     noHeader
                     value={val}
@@ -253,13 +251,13 @@ export default function ConditionSliders() {
                     formatValue={formatValue}
                     formatLabel={formatLabel}
                   />
-                  {!isLast && <Divider />}
                 </div>
-              )
-            })}
-          </div>
-        ))}
-      </div>
+                {!isLast && <Divider />}
+              </div>
+            )
+          })}
+        </div>
+      ))}
     </div>
   )
 }

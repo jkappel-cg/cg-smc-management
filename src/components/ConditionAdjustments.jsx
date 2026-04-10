@@ -44,16 +44,8 @@ function ConditionRow({ label, value, badge }) {
   if (badge) {
     return (
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '5px 0' }}>
-        <span style={{ fontSize: 12, color: '#6b7280' }}>{label}</span>
-        <span style={{
-          fontSize: 11,
-          background: '#FFE2E2',
-          color: '#0D1722',
-          borderRadius: 4,
-          padding: '2px 8px',
-          fontWeight: 500,
-          whiteSpace: 'nowrap',
-        }}>No offer made</span>
+        <span style={{ fontSize: 12, color: '#5E6976' }}>{label}</span>
+        <span style={{ fontSize: 12, fontWeight: 500, color: '#cc0000' }}>No offer made</span>
       </div>
     )
   }
@@ -61,7 +53,7 @@ function ConditionRow({ label, value, badge }) {
   const isNoAdj = value === 'No adjustment'
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '5px 0' }}>
-      <span style={{ fontSize: 12, color: '#6b7280' }}>{label}</span>
+      <span style={{ fontSize: 12, color: '#5E6976' }}>{label}</span>
       <span style={{
         fontSize: 12,
         fontWeight: isNoAdj ? 400 : 500,
@@ -77,10 +69,10 @@ function ConditionRow({ label, value, badge }) {
 export default function ConditionAdjustments() {
   return (
     <div>
-      <p style={{ fontSize: 12, color: '#6b7280', marginBottom: 4 }}>
+      <p style={{ fontSize: 12, color: '#5E6976', marginBottom: 4 }}>
         We automatically adjust your offers based on the condition the consumer selects.
       </p>
-      <p style={{ fontSize: 12, color: '#6b7280', fontStyle: 'italic', marginBottom: 16 }}>
+      <p style={{ fontSize: 12, color: '#5E6976', fontStyle: 'italic', marginBottom: 16 }}>
         Example: If a consumer selects "Bad tires," your offer is reduced by $800 based on the rules below.
       </p>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>

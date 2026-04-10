@@ -21,26 +21,27 @@ export default function GuardrailSlider({
 
   const inRange = value >= lo && value <= recHi
   const GREEN = '#078A0B'
+  const GREEN_TRACK = '#09AD0E'
   const AMBER = '#BA7517'
   const thumbColor = inRange ? GREEN : AMBER
 
-  let badgeText, badgeBg, badgeColor
+  let badgeText, badgeBg
   if (inRange) {
     badgeText = isTwoSided ? 'Recommended' : 'Within range'
-    badgeBg = '#c8f0c9'; badgeColor = GREEN
+    badgeBg = '#DCF7DD'
   } else if (value < lo) {
     badgeText = 'Below recommended'
-    badgeBg = '#fff3e0'; badgeColor = AMBER
+    badgeBg = '#FFF1C0'
   } else {
     badgeText = 'Above recommended'
-    badgeBg = '#fff3e0'; badgeColor = AMBER
+    badgeBg = '#FFF1C0'
   }
 
   const fmt = formatLabel ?? formatValue
 
   const badge = (
     <span style={{
-      fontSize: 11, background: badgeBg, color: badgeColor,
+      fontSize: 12, background: badgeBg, color: '#0D1722',
       borderRadius: 4, padding: '2px 8px', fontWeight: 500, whiteSpace: 'nowrap',
     }}>
       {badgeText}
@@ -50,40 +51,40 @@ export default function GuardrailSlider({
   return (
     <div>
       {/* Header row */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
         {conditionLabel
-          ? <span style={{ fontSize: 13, color: '#1a1a1a' }}>{conditionLabel}</span>
+          ? <span style={{ fontSize: 14, color: '#0D1722' }}>{conditionLabel}</span>
           : badge
         }
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           {conditionLabel && badge}
-          <span style={{ fontSize: 15, fontWeight: 500, color: '#1a1a1a', whiteSpace: 'nowrap' }}>
+          <span style={{ fontSize: 16, fontWeight: 400, color: '#0D1722', whiteSpace: 'nowrap' }}>
             {formatValue(value)}
           </span>
         </div>
       </div>
 
       {/* Track */}
-      <div style={{ position: 'relative', height: 28 }}>
+      <div style={{ position: 'relative', height: 32 }}>
         {/* Background track */}
         <div style={{
           position: 'absolute', top: '50%', left: 0, right: 0,
-          height: 5, background: '#e0e0e0', borderRadius: 3,
+          height: 10, background: '#E5E5E5', borderRadius: 5,
           transform: 'translateY(-50%)',
         }} />
         {/* Recommended zone overlay */}
         <div style={{
           position: 'absolute', top: '50%',
           left: `${loPct}%`, width: `${hiPct - loPct}%`,
-          height: 5, background: GREEN, opacity: 0.45, borderRadius: 3,
+          height: 10, background: GREEN_TRACK, borderRadius: 5,
           transform: 'translateY(-50%)', pointerEvents: 'none',
         }} />
         {/* Visual thumb */}
         <div style={{
           position: 'absolute', top: '50%',
           left: `${valPct}%`,
-          width: 20, height: 20,
-          background: '#fff', border: `2px solid ${thumbColor}`, borderRadius: '50%',
+          width: 27, height: 27,
+          background: '#fff', border: `3px solid ${thumbColor}`, borderRadius: '50%',
           transform: 'translate(-50%, -50%)', pointerEvents: 'none',
         }} />
         {/* Native input */}
@@ -100,14 +101,14 @@ export default function GuardrailSlider({
 
       {/* Anchor labels */}
       <div style={{ position: 'relative', height: 18, marginTop: 2 }}>
-        <span style={{ position: 'absolute', left: 0, fontSize: 12, color: '#9ca3af' }}>
+        <span style={{ position: 'absolute', left: 0, fontSize: 12, color: '#5E6976' }}>
           {fmt(min)}
         </span>
         {isTwoSided && (
           <span style={{
             position: 'absolute', left: `${loPct}%`,
             transform: 'translateX(-50%)',
-            fontSize: 12, color: GREEN, fontWeight: 600,
+            fontSize: 12, color: GREEN, fontWeight: 400,
           }}>
             {fmt(lo)}
           </span>
@@ -115,11 +116,11 @@ export default function GuardrailSlider({
         <span style={{
           position: 'absolute', left: `${hiPct}%`,
           transform: 'translateX(-50%)',
-          fontSize: 12, color: GREEN, fontWeight: 600,
+          fontSize: 12, color: GREEN, fontWeight: 400,
         }}>
           {fmt(recHi)}
         </span>
-        <span style={{ position: 'absolute', right: 0, fontSize: 12, color: '#9ca3af' }}>
+        <span style={{ position: 'absolute', right: 0, fontSize: 12, color: '#5E6976' }}>
           {fmt(max)}
         </span>
       </div>

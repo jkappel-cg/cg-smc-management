@@ -10,9 +10,9 @@ export default function SectionCard({ title, children }) {
       <div style={{
         padding: '12px 24px',
         borderBottom: '1px solid #e0e0e0',
-        fontSize: 15,
+        fontSize: 16,
         fontWeight: 600,
-        color: '#1a1a1a',
+        color: '#0D1722',
       }}>
         {title}
       </div>

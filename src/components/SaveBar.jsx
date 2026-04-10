@@ -13,7 +13,7 @@ export default function SaveBar({ onSave, navWidth = 240 }) {
       background: '#fff',
       zIndex: 100,
     }}>
-      <span style={{ fontSize: 13, color: '#6b7280' }}>
+      <span style={{ fontSize: 14, color: '#5E6976' }}>
         Changes apply immediately to new Sell My Car leads.
       </span>
       <button
@@ -24,7 +24,7 @@ export default function SaveBar({ onSave, navWidth = 240 }) {
           border: 'none',
           borderRadius: 20,
           padding: '8px 22px',
-          fontSize: 13,
+          fontSize: 14,
           fontWeight: 600,
           cursor: 'pointer',
         }}

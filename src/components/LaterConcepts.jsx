@@ -21,7 +21,7 @@ export default function LaterConcepts({ maxAgeStop, onAgeStopChange, biddingRadi
     <div>
       {/* Later concepts label */}
       <div style={{
-        fontSize: 11, fontWeight: 600, color: '#b625ce',
+        fontSize: 12, fontWeight: 600, color: '#b625ce',
         letterSpacing: '0.08em', textTransform: 'uppercase',
         marginBottom: 12,
       }}>
@@ -31,7 +31,7 @@ export default function LaterConcepts({ maxAgeStop, onAgeStopChange, biddingRadi
       {/* Card 1 — Leads Distribution Impact */}
       <SectionCard title="Leads distribution impact">
         <div style={{ padding: '20px 0' }}>
-          <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 20 }}>
+          <p style={{ fontSize: 14, color: '#5E6976', marginBottom: 20 }}>
             Approximate inventory coverage based on your max vehicle age setting.
           </p>
 
@@ -45,7 +45,7 @@ export default function LaterConcepts({ maxAgeStop, onAgeStopChange, biddingRadi
                   {/* Percentage label */}
                   <span style={{
                     fontSize: 12, fontWeight: 500,
-                    color: included ? '#078A0B' : '#9ca3af',
+                    color: included ? '#078A0B' : '#5E6976',
                     marginBottom: 4,
                   }}>
                     {bar.pct}%
@@ -54,13 +54,13 @@ export default function LaterConcepts({ maxAgeStop, onAgeStopChange, biddingRadi
                   <div style={{
                     width: '100%',
                     height: barH,
-                    background: included ? '#078A0B' : '#9ca3af',
+                    background: included ? '#078A0B' : '#5E6976',
                     opacity: included ? 0.7 : 0.4,
                     borderRadius: '3px 3px 0 0',
                     transition: 'background 0.2s, opacity 0.2s',
                   }} />
                   {/* Age range label */}
-                  <span style={{ fontSize: 12, color: '#9ca3af', marginTop: 6 }}>
+                  <span style={{ fontSize: 12, color: '#5E6976', marginTop: 6 }}>
                     {bar.label}
                   </span>
                 </div>
@@ -69,7 +69,7 @@ export default function LaterConcepts({ maxAgeStop, onAgeStopChange, biddingRadi
           </div>
 
           {/* Summary */}
-          <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 20 }}>
+          <p style={{ fontSize: 14, color: '#5E6976', marginBottom: 20 }}>
             <span style={{ fontWeight: 600, color: '#1a1a1a' }}>~{coveredPct}%</span> of inventory covered
           </p>
 

@@ -48,10 +48,15 @@ export default function LaterConcepts({ maxAgeStop, onAgeStopChange, biddingRadi
       {/* Card 1 — Leads Distribution Impact */}
       <SectionCard title="Available leads by vehicle age">
         <div style={{ padding: '20px 0' }}>
-          <p style={{ fontSize: 14, color: '#5E6976', marginBottom: 20 }}>
+          <p style={{ fontSize: 14, color: '#5E6976', marginBottom: 12 }}>
             This chart shows how your lead volume is distributed across vehicle ages.
             Restricting your max vehicle age cuts off the bars to the right — directly
             reducing the share of leads you're eligible to receive.
+          </p>
+
+          {/* Coverage summary — above chart */}
+          <p style={{ fontSize: 14, color: '#5E6976', marginBottom: 10 }}>
+            <span style={{ fontWeight: 600, color: '#0D1722' }}>~{coveredPct}%</span> of available leads eligible with current age setting
           </p>
 
           {/* Bar chart */}
@@ -86,7 +91,7 @@ export default function LaterConcepts({ maxAgeStop, onAgeStopChange, biddingRadi
           <div style={{ borderTop: '1px solid #e0e0e0', marginBottom: 4 }} />
 
           {/* X-axis labels at key year marks */}
-          <div style={{ position: 'relative', height: 16, marginBottom: 20 }}>
+          <div style={{ position: 'relative', height: 16, marginBottom: 8 }}>
             {BARS.map((bar, i) => {
               if (!TICKS.includes(bar.year)) return null
               const pct = (i / (BARS.length - 1)) * 100
@@ -109,11 +114,6 @@ export default function LaterConcepts({ maxAgeStop, onAgeStopChange, biddingRadi
               Yr 16+
             </span>
           </div>
-
-          {/* Coverage summary */}
-          <p style={{ fontSize: 14, color: '#5E6976', marginBottom: 20 }}>
-            <span style={{ fontWeight: 600, color: '#0D1722' }}>~{coveredPct}%</span> of available leads eligible with current age setting
-          </p>
 
           {/* Age slider */}
           <SnappingAgeSlider value={maxAgeStop} onChange={onAgeStopChange} />

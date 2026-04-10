@@ -40,9 +40,9 @@ const SECTIONS = [
   {
     header: 'No impact',
     items: [
-      { key: 'aftermarket', label: 'Aftermarket parts',   static: true },
-      { key: 'fadingPaint', label: 'Fading paint',        static: true },
-      { key: 'manual',      label: 'Manual transmission', static: true },
+      { key: 'aftermarket', label: 'Aftermarket parts',   static: true, default: 100, recLo: 50, recMax: 200, defaultUnit: '$' },
+      { key: 'fadingPaint', label: 'Fading paint',        static: true, default: 100, recLo: 50, recMax: 200, defaultUnit: '$' },
+      { key: 'manual',      label: 'Manual transmission', static: true, default: 150, recLo: 50, recMax: 250, defaultUnit: '$' },
     ],
   },
 ]
@@ -50,14 +50,14 @@ const SECTIONS = [
 function initValues() {
   const vals = {}
   for (const s of SECTIONS) for (const item of s.items)
-    if (!item.badge && !item.static) vals[item.key] = item.default
+    if (!item.badge) vals[item.key] = item.static ? 0 : item.default
   return vals
 }
 
 function initUnits() {
   const u = {}
   for (const s of SECTIONS) for (const item of s.items)
-    if (!item.badge && !item.static) u[item.key] = item.defaultUnit || '$'
+    if (!item.badge) u[item.key] = item.defaultUnit || '$'
   return u
 }
 
@@ -89,15 +89,26 @@ function getFmt(unit) {
 
 function UnitToggle({ unit, onChange }) {
   return (
-    <div style={{ display: 'inline-flex', border: '1px solid #cccccc', borderRadius: 4, overflow: 'hidden' }}>
-      {['$', '%'].map(u => (
-        <button key={u} onClick={() => onChange(u)} style={{
-          padding: '2px 8px', fontSize: 12,
-          background: unit === u ? '#0763D3' : 'transparent',
-          color: unit === u ? '#fff' : '#5E6976',
-          border: 'none', cursor: 'pointer', fontWeight: 400,
-        }}>{u}</button>
-      ))}
+    <div style={{ display: 'inline-flex' }}>
+      {['$', '%'].map((u, i) => {
+        const selected = unit === u
+        return (
+          <button key={u} onClick={() => onChange(u)} style={{
+            padding: '0 8px',
+            height: 28,
+            fontSize: 12,
+            fontWeight: 400,
+            background: selected ? '#E4F5FE' : '#fff',
+            color: selected ? '#0D1722' : '#5E6976',
+            border: selected ? '1px solid #0763D3' : '1px solid #cccccc',
+            borderRadius: i === 0 ? '4px 0 0 4px' : '0 4px 4px 0',
+            marginLeft: i === 0 ? 0 : -1,
+            zIndex: selected ? 1 : 0,
+            position: 'relative',
+            cursor: 'pointer',
+          }}>{u}</button>
+        )
+      })}
     </div>
   )
 }
@@ -105,9 +116,10 @@ function UnitToggle({ unit, onChange }) {
 const Divider = () => <div style={{ height: 1, background: '#f0f0f0', width: '50%', marginTop: 12 }} />
 
 export default function ConditionSliders() {
-  const [values, setValues]     = useState(initValues)
-  const [units, setUnits]       = useState(initUnits)
-  const [rawInputs, setRawInputs] = useState({}) // string being typed, cleared on blur
+  const [values, setValues]         = useState(initValues)
+  const [units, setUnits]           = useState(initUnits)
+  const [rawInputs, setRawInputs]   = useState({})
+  const [staticExpanded, setStaticExpanded] = useState({})
 
   function set(key, val) { setValues(v => ({ ...v, [key]: val })) }
 
@@ -128,6 +140,25 @@ export default function ConditionSliders() {
     setRawInputs(r => { const n = { ...r }; delete n[item.key]; return n })
   }
 
+  function handleStaticExpand(item, clickedUnit) {
+    const isExpanded = staticExpanded[item.key]
+    const currentUnit = units[item.key]
+    if (!isExpanded) {
+      // Expand: set to item's default value with chosen unit
+      setStaticExpanded(e => ({ ...e, [item.key]: true }))
+      setUnits(u => ({ ...u, [item.key]: clickedUnit }))
+      setValues(v => ({ ...v, [item.key]: item.default }))
+    } else if (currentUnit === clickedUnit) {
+      // Clicking active unit again collapses
+      setStaticExpanded(e => ({ ...e, [item.key]: false }))
+      setValues(v => ({ ...v, [item.key]: 0 }))
+      setRawInputs(r => { const n = { ...r }; delete n[item.key]; return n })
+    } else {
+      // Switch unit (convert value)
+      changeUnit(item, clickedUnit)
+    }
+  }
+
   function handleInputChange(key, raw) {
     setRawInputs(r => ({ ...r, [key]: raw }))
   }
@@ -140,6 +171,17 @@ export default function ConditionSliders() {
       set(item.key, Math.max(cfg.min, Math.min(cfg.max, parsed)))
     }
     setRawInputs(r => { const n = { ...r }; delete n[item.key]; return n })
+  }
+
+  const inputStyle = {
+    width: 52, height: 28,
+    border: '1px solid #cccccc',
+    borderRadius: 4,
+    fontSize: 14,
+    padding: '2px 6px',
+    textAlign: 'right',
+    outline: 'none',
+    color: '#0D1722',
   }
 
   return (
@@ -179,18 +221,73 @@ export default function ConditionSliders() {
               </div>
             )
 
-            /* ── Static "no adjustment" ── */
-            if (item.static) return (
-              <div key={item.key} style={{ padding: '10px 0' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: 14, fontWeight: 600, color: '#0D1722' }}>{item.label}</span>
-                  <span style={{ fontSize: 12, color: '#5E6976' }}>No adjustment</span>
-                </div>
-                {!isLast && <Divider />}
-              </div>
-            )
+            /* ── Static "no adjustment" items ── */
+            if (item.static) {
+              const isExpanded = staticExpanded[item.key]
+              const unit = units[item.key]
 
-            /* ── Slider item ── */
+              if (!isExpanded) {
+                return (
+                  <div key={item.key} style={{ padding: '10px 0' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: 14, fontWeight: 600, color: '#0D1722' }}>{item.label}</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span style={{ fontSize: 12, color: '#5E6976' }}>No adjustment</span>
+                        <UnitToggle unit={null} onChange={u => handleStaticExpand(item, u)} />
+                      </div>
+                    </div>
+                    {!isLast && <Divider />}
+                  </div>
+                )
+              }
+
+              // Expanded — render full slider UI
+              const val = values[item.key]
+              const cfg = getConfig(item, unit)
+              const { formatValue, formatLabel } = getFmt(unit)
+              const inRange = val >= cfg.recLo && val <= cfg.recHi
+              const badgeText = inRange ? 'Recommended' : val < cfg.recLo ? 'Below recommended' : 'Above recommended'
+              const badgeBg   = inRange ? '#DCF7DD' : '#FFF1C0'
+              const inputDisplay = item.key in rawInputs ? rawInputs[item.key] : String(val)
+
+              return (
+                <div key={item.key} style={{ padding: '10px 0' }}>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: '#0D1722', marginBottom: 6 }}>
+                    {item.label}
+                  </div>
+                  <div style={{ width: '50%' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+                      <span style={{ fontSize: 12, background: badgeBg, color: '#0D1722', borderRadius: 4, padding: '2px 8px', fontWeight: 400, whiteSpace: 'nowrap' }}>
+                        {badgeText}
+                      </span>
+                      <UnitToggle unit={unit} onChange={u => handleStaticExpand(item, u)} />
+                      <input
+                        type="number"
+                        value={inputDisplay}
+                        onChange={e => handleInputChange(item.key, e.target.value)}
+                        onBlur={e => handleInputBlur(item, e.target.value)}
+                        onFocus={e => e.target.select()}
+                        style={inputStyle}
+                        onMouseEnter={e => { e.target.style.borderColor = '#0066cc' }}
+                        onMouseLeave={e => { if (document.activeElement !== e.target) e.target.style.borderColor = '#cccccc' }}
+                      />
+                    </div>
+                    <GuardrailSlider
+                      noHeader
+                      value={val}
+                      onChange={v => set(item.key, v)}
+                      min={cfg.min} max={cfg.max} step={cfg.step}
+                      recLo={cfg.recLo} recHi={cfg.recHi}
+                      formatValue={formatValue}
+                      formatLabel={formatLabel}
+                    />
+                  </div>
+                  {!isLast && <Divider />}
+                </div>
+              )
+            }
+
+            /* ── Regular slider item ── */
             const unit = units[item.key]
             const val  = values[item.key]
             const cfg  = getConfig(item, unit)
@@ -202,10 +299,13 @@ export default function ConditionSliders() {
 
             return (
               <div key={item.key} style={{ padding: '10px 0' }}>
-                {/* Header: bold label left — badge + unit toggle + input right */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                  <span style={{ fontSize: 14, fontWeight: 600, color: '#0D1722' }}>{item.label}</span>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                {/* Bold label at full width */}
+                <div style={{ fontSize: 14, fontWeight: 600, color: '#0D1722', marginBottom: 6 }}>
+                  {item.label}
+                </div>
+                {/* Badge + toggle + input + slider — all capped at 50% width, left-aligned */}
+                <div style={{ width: '50%' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
                     <span style={{ fontSize: 12, background: badgeBg, color: '#0D1722', borderRadius: 4, padding: '2px 8px', fontWeight: 400, whiteSpace: 'nowrap' }}>
                       {badgeText}
                     </span>
@@ -216,24 +316,11 @@ export default function ConditionSliders() {
                       onChange={e => handleInputChange(item.key, e.target.value)}
                       onBlur={e => handleInputBlur(item, e.target.value)}
                       onFocus={e => e.target.select()}
-                      style={{
-                        width: 68, height: 28,
-                        border: '1px solid #cccccc',
-                        borderRadius: 4,
-                        fontSize: 14,
-                        padding: '2px 8px',
-                        textAlign: 'right',
-                        outline: 'none',
-                        color: '#0D1722',
-                      }}
+                      style={inputStyle}
                       onMouseEnter={e => { e.target.style.borderColor = '#0066cc' }}
                       onMouseLeave={e => { if (document.activeElement !== e.target) e.target.style.borderColor = '#cccccc' }}
                     />
                   </div>
-                </div>
-
-                {/* Slider track only (no header) */}
-                <div style={{ maxWidth: '50%' }}>
                   <GuardrailSlider
                     noHeader
                     value={val}
@@ -244,7 +331,6 @@ export default function ConditionSliders() {
                     formatLabel={formatLabel}
                   />
                 </div>
-
                 {!isLast && <Divider />}
               </div>
             )

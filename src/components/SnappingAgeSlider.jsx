@@ -41,6 +41,23 @@ export default function SnappingAgeSlider({ value, onChange }) {
           height: 6, background: GREEN_TRACK, borderRadius: 3,
           transform: 'translateY(-50%)', pointerEvents: 'none',
         }} />
+        {/* Dotted circle markers at each snap stop */}
+        {STOPS.map((_, i) => {
+          const pct = (i / (STOPS.length - 1)) * 100
+          return (
+            <div key={i} style={{
+              position: 'absolute', top: '50%',
+              left: `${pct}%`,
+              width: 14, height: 14,
+              border: '1.5px dotted #C8CDD2',
+              borderRadius: '50%',
+              transform: 'translate(-50%, -50%)',
+              pointerEvents: 'none',
+              background: 'transparent',
+              zIndex: 1,
+            }} />
+          )
+        })}
         <div style={{
           position: 'absolute', top: '50%',
           left: `${valPct}%`,
@@ -50,6 +67,7 @@ export default function SnappingAgeSlider({ value, onChange }) {
           borderRadius: '50%',
           boxShadow: '0 0 6px rgba(0,0,0,0.18)',
           transform: 'translate(-50%, -50%)', pointerEvents: 'none',
+          zIndex: 2,
         }} />
         <input
           type="range" min={0} max={3} step={1} value={value}
@@ -58,6 +76,7 @@ export default function SnappingAgeSlider({ value, onChange }) {
             position: 'absolute', top: 0, left: 0,
             width: '100%', height: '100%',
             opacity: 0, cursor: 'pointer', margin: 0,
+            zIndex: 3,
           }}
         />
       </div>

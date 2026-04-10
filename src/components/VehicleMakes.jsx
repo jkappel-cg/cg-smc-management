@@ -20,7 +20,7 @@ export function MakesToggle({ mode, onChange }) {
             style={{
               padding: '8px 14px',
               fontSize: 14,
-              fontWeight: selected ? 600 : 400,
+              fontWeight: 400,
               color: selected ? '#0D1722' : '#5E6976',
               background: selected ? '#E4F5FE' : '#fff',
               border: selected ? '1px solid #0763D3' : '1px solid #e0e0e0',

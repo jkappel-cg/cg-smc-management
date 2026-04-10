@@ -19,7 +19,7 @@ export default function SnappingAgeSlider({ value, onChange }) {
           fontSize: 12,
           background: inRange ? '#DCF7DD' : '#FFF1C0',
           color: '#0D1722',
-          borderRadius: 4, padding: '2px 8px', fontWeight: 500,
+          borderRadius: 4, padding: '2px 8px', fontWeight: 400,
         }}>
           {inRange ? 'Recommended' : 'Outside recommended range'}
         </span>
@@ -29,27 +29,45 @@ export default function SnappingAgeSlider({ value, onChange }) {
       </div>
 
       {/* Track */}
-      <div style={{ position: 'relative', height: 32 }}>
+      <div style={{ position: 'relative', height: 24 }}>
         <div style={{
           position: 'absolute', top: '50%', left: 0, right: 0,
-          height: 10, background: '#E5E5E5', borderRadius: 5,
+          height: 6, background: '#E5E5E5', borderRadius: 3,
           transform: 'translateY(-50%)',
         }} />
         <div style={{
           position: 'absolute', top: '50%',
           left: 0, width: `${recPct}%`,
-          height: 10, background: GREEN_TRACK, borderRadius: 5,
+          height: 6, background: GREEN_TRACK, borderRadius: 3,
           transform: 'translateY(-50%)', pointerEvents: 'none',
         }} />
+        {/* Dotted circle markers at each snap stop */}
+        {STOPS.map((_, i) => {
+          const pct = (i / (STOPS.length - 1)) * 100
+          return (
+            <div key={i} style={{
+              position: 'absolute', top: '50%',
+              left: `${pct}%`,
+              width: 14, height: 14,
+              border: '1.5px dotted #C8CDD2',
+              borderRadius: '50%',
+              transform: 'translate(-50%, -50%)',
+              pointerEvents: 'none',
+              background: 'transparent',
+              zIndex: 1,
+            }} />
+          )
+        })}
         <div style={{
           position: 'absolute', top: '50%',
           left: `${valPct}%`,
-          width: 27, height: 27,
+          width: 24, height: 24,
           background: '#fff',
           border: `1px solid ${thumbColor}`,
           borderRadius: '50%',
           boxShadow: '0 0 6px rgba(0,0,0,0.18)',
           transform: 'translate(-50%, -50%)', pointerEvents: 'none',
+          zIndex: 2,
         }} />
         <input
           type="range" min={0} max={3} step={1} value={value}
@@ -58,6 +76,7 @@ export default function SnappingAgeSlider({ value, onChange }) {
             position: 'absolute', top: 0, left: 0,
             width: '100%', height: '100%',
             opacity: 0, cursor: 'pointer', margin: 0,
+            zIndex: 3,
           }}
         />
       </div>

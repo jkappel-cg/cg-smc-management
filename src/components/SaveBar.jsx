@@ -14,7 +14,7 @@ export default function SaveBar({ onSave, navWidth = 240 }) {
       zIndex: 100,
     }}>
       <span style={{ fontSize: 14, color: '#5E6976' }}>
-        Changes apply immediately to new Sell My Car leads.
+        Changes apply immediately to all new Sell My Car offers.
       </span>
       <button
         onClick={onSave}

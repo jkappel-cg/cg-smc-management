@@ -58,7 +58,7 @@ export default function GuardrailSlider({
         }
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           {conditionLabel && badge}
-          <span style={{ fontSize: 16, fontWeight: 400, color: '#0D1722', whiteSpace: 'nowrap' }}>
+          <span style={{ fontSize: 14, fontWeight: 400, color: '#0D1722', whiteSpace: 'nowrap' }}>
             {formatValue(value)}
           </span>
         </div>
@@ -84,7 +84,10 @@ export default function GuardrailSlider({
           position: 'absolute', top: '50%',
           left: `${valPct}%`,
           width: 27, height: 27,
-          background: '#fff', border: `3px solid ${thumbColor}`, borderRadius: '50%',
+          background: '#fff',
+          border: `1px solid ${thumbColor}`,
+          borderRadius: '50%',
+          boxShadow: '0 0 6px rgba(0,0,0,0.18)',
           transform: 'translate(-50%, -50%)', pointerEvents: 'none',
         }} />
         {/* Native input */}

@@ -4,7 +4,7 @@ import SectionCard from '../components/SectionCard.jsx'
 import FieldBlock from '../components/FieldBlock.jsx'
 import CardSelector from '../components/CardSelector.jsx'
 import SelectInput from '../components/SelectInput.jsx'
-import VehicleMakes from '../components/VehicleMakes.jsx'
+import VehicleMakes, { MakesToggle } from '../components/VehicleMakes.jsx'
 import ConditionAdjustments from '../components/ConditionAdjustments.jsx'
 import ConditionSliders from '../components/ConditionSliders.jsx'
 import GuardrailSlider from '../components/GuardrailSlider.jsx'
@@ -68,18 +68,18 @@ const MAX_OFFER_OPTIONS = [
 ]
 
 const MAX_MILEAGE_OPTIONS = [
-  { value: '200000', label: 'Up to 200k miles (Recommended)' },
-  { value: '175000', label: 'Up to 175k miles' },
-  { value: '150000', label: 'Up to 150k miles' },
-  { value: '125000', label: 'Up to 125k miles' },
-  { value: '100000', label: 'Up to 100k miles' },
+  { value: '200000', label: 'Up to 200,000 miles (Recommended)' },
+  { value: '175000', label: 'Up to 175,000 miles' },
+  { value: '150000', label: 'Up to 150,000 miles' },
+  { value: '125000', label: 'Up to 125,000 miles' },
+  { value: '100000', label: 'Up to 100,000 miles' },
 ]
 
 const MAX_AGE_OPTIONS = [
-  { value: 'none', label: 'No preference — 1999–present (Recommended)' },
-  { value: '15', label: 'Up to 15 years old (2010–present)' },
-  { value: '10', label: 'Up to 10 years old (2015–present)' },
-  { value: '5', label: 'Up to 5 years old (2020–present)' },
+  { value: 'none', label: 'No limit (Recommended)' },
+  { value: '15', label: 'Up to 15 years old' },
+  { value: '10', label: 'Up to 10 years old' },
+  { value: '5', label: 'Up to 5 years old' },
 ]
 
 export default function SMCStrategy() {
@@ -92,6 +92,7 @@ export default function SMCStrategy() {
   const [maxMileage, setMaxMileage] = useState('200000')
   const [maxAge, setMaxAge] = useState('none')
   const [excludedMakes, setExcludedMakes] = useState([])
+  const [makesMode, setMakesMode] = useState('include')
   // Next phase slider state
   const [maxOfferSlider, setMaxOfferSlider] = useState(80000)
   const [maxMileageSlider, setMaxMileageSlider] = useState(200000)
@@ -192,8 +193,8 @@ export default function SMCStrategy() {
                 </FieldBlock>
 
                 {phase !== 'MVP' ? (
-                  <FieldBlock label="Max offer amount" description="Offers won't exceed this amount regardless of vehicle value" last>
-                    <div style={{ maxWidth: '50%' }}>
+                  <FieldBlock label="Max offer amount" description="Offers won't exceed this amount regardless of vehicle value" last inlineControl={
+                    <div style={{ width: '55%' }}>
                       <GuardrailSlider
                         value={maxOfferSlider}
                         onChange={setMaxOfferSlider}
@@ -203,14 +204,14 @@ export default function SMCStrategy() {
                         formatLabel={v => `$${v / 1000}k`}
                       />
                     </div>
-                  </FieldBlock>
+                  } />
                 ) : (
                   <FieldBlock label="Max offer amount" description="Offers won't exceed this amount regardless of vehicle value" last inline>
                     <SelectInput
                       options={MAX_OFFER_OPTIONS}
                       value={maxOffer}
                       onChange={setMaxOffer}
-                      width={300}
+                      width={280}
                     />
                   </FieldBlock>
                 )}
@@ -219,8 +220,8 @@ export default function SMCStrategy() {
               {/* Section 2 — Bidding Criteria */}
               <SectionCard title="Bidding criteria">
                 {phase !== 'MVP' ? (
-                  <FieldBlock label="Max mileage limit" description="Vehicles above this mileage won't receive offers">
-                    <div style={{ maxWidth: '50%' }}>
+                  <FieldBlock label="Max mileage limit" description="Vehicles above this mileage won't receive offers" inlineControl={
+                    <div style={{ width: '55%' }}>
                       <GuardrailSlider
                         value={maxMileageSlider}
                         onChange={setMaxMileageSlider}
@@ -230,37 +231,44 @@ export default function SMCStrategy() {
                         formatLabel={v => `${v / 1000}k`}
                       />
                     </div>
-                  </FieldBlock>
+                  } />
                 ) : (
                   <FieldBlock label="Max mileage limit" description="Vehicles above this mileage won't receive offers" inline>
                     <SelectInput
                       options={MAX_MILEAGE_OPTIONS}
                       value={maxMileage}
                       onChange={setMaxMileage}
-                      width={310}
+                      width={280}
                     />
                   </FieldBlock>
                 )}
 
                 {phase !== 'MVP' ? (
-                  <FieldBlock label="Max vehicle age" description="Vehicles older than this won't receive offers">
-                    <div style={{ maxWidth: '50%' }}>
+                  <FieldBlock label="Max vehicle age" description="Vehicles older than this won't receive offers" inlineControl={
+                    <div style={{ width: '55%' }}>
                       <SnappingAgeSlider value={maxAgeStop} onChange={setMaxAgeStop} />
                     </div>
-                  </FieldBlock>
+                  } />
                 ) : (
                   <FieldBlock label="Max vehicle age" description="Vehicles older than this won't receive offers" inline>
                     <SelectInput
                       options={MAX_AGE_OPTIONS}
                       value={maxAge}
                       onChange={setMaxAge}
-                      width={320}
+                      width={280}
                     />
                   </FieldBlock>
                 )}
 
-                <FieldBlock label="Vehicle makes" description="Control which makes are eligible for offers" last>
-                  <VehicleMakes excluded={excludedMakes} onChange={setExcludedMakes} />
+                <FieldBlock
+                  label="Vehicle makes"
+                  description="Control which makes are eligible for offers"
+                  last
+                  inlineControl={<MakesToggle mode={makesMode} onChange={m => { setMakesMode(m); if (m === 'include') setExcludedMakes([]) }} />}
+                >
+                  {makesMode === 'exclude' && (
+                    <VehicleMakes excluded={excludedMakes} onChange={setExcludedMakes} />
+                  )}
                 </FieldBlock>
               </SectionCard>
 

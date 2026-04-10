@@ -40,9 +40,9 @@ const SECTIONS = [
   {
     header: 'No impact',
     items: [
-      { key: 'aftermarket', label: 'Aftermarket parts',   noImpact: true, default: 0, recLo: 50, recMax: 200, defaultUnit: '$' },
-      { key: 'fadingPaint', label: 'Fading paint',        noImpact: true, default: 0, recLo: 50, recMax: 200, defaultUnit: '$' },
-      { key: 'manual',      label: 'Manual transmission', noImpact: true, default: 0, recLo: 50, recMax: 250, defaultUnit: '$' },
+      { key: 'aftermarket', label: 'Aftermarket parts',   static: true, default: 100, recLo: 50, recMax: 200, defaultUnit: '$' },
+      { key: 'fadingPaint', label: 'Fading paint',        static: true, default: 100, recLo: 50, recMax: 200, defaultUnit: '$' },
+      { key: 'manual',      label: 'Manual transmission', static: true, default: 150, recLo: 50, recMax: 250, defaultUnit: '$' },
     ],
   },
 ]
@@ -50,7 +50,7 @@ const SECTIONS = [
 function initValues() {
   const vals = {}
   for (const s of SECTIONS) for (const item of s.items)
-    if (!item.badge) vals[item.key] = item.default
+    if (!item.badge) vals[item.key] = item.static ? 0 : item.default
   return vals
 }
 
@@ -116,9 +116,10 @@ function UnitToggle({ unit, onChange }) {
 const Divider = () => <div style={{ height: 1, background: '#f0f0f0', width: '50%', marginTop: 12 }} />
 
 export default function ConditionSliders() {
-  const [values, setValues]       = useState(initValues)
-  const [units, setUnits]         = useState(initUnits)
-  const [rawInputs, setRawInputs] = useState({})
+  const [values, setValues]             = useState(initValues)
+  const [units, setUnits]               = useState(initUnits)
+  const [rawInputs, setRawInputs]       = useState({})
+  const [staticExpanded, setStaticExpanded] = useState({})
 
   function set(key, val) { setValues(v => ({ ...v, [key]: val })) }
 
@@ -137,6 +138,22 @@ export default function ConditionSliders() {
     setUnits(u => ({ ...u, [item.key]: newUnit }))
     setValues(v => ({ ...v, [item.key]: next }))
     setRawInputs(r => { const n = { ...r }; delete n[item.key]; return n })
+  }
+
+  function handleStaticExpand(item, clickedUnit) {
+    const isExpanded = staticExpanded[item.key]
+    const currentUnit = units[item.key]
+    if (!isExpanded) {
+      setStaticExpanded(e => ({ ...e, [item.key]: true }))
+      setUnits(u => ({ ...u, [item.key]: clickedUnit }))
+      setValues(v => ({ ...v, [item.key]: item.default }))
+    } else if (currentUnit === clickedUnit) {
+      setStaticExpanded(e => ({ ...e, [item.key]: false }))
+      setValues(v => ({ ...v, [item.key]: 0 }))
+      setRawInputs(r => { const n = { ...r }; delete n[item.key]; return n })
+    } else {
+      changeUnit(item, clickedUnit)
+    }
   }
 
   function handleInputChange(key, raw) {
@@ -201,21 +218,80 @@ export default function ConditionSliders() {
               </div>
             )
 
-            /* ── All slider items (regular + No impact at 0) ── */
+            /* ── Static "no adjustment" items ── */
+            if (item.static) {
+              const isExpanded = staticExpanded[item.key]
+              const unit = units[item.key]
+
+              if (!isExpanded) {
+                return (
+                  <div key={item.key} style={{ padding: '10px 0' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: 14, fontWeight: 600, color: '#0D1722' }}>{item.label}</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span style={{ fontSize: 12, color: '#5E6976' }}>No adjustment</span>
+                        <UnitToggle unit={null} onChange={u => handleStaticExpand(item, u)} />
+                      </div>
+                    </div>
+                    {!isLast && <Divider />}
+                  </div>
+                )
+              }
+
+              // Expanded — render full slider UI
+              const val = values[item.key]
+              const cfg = getConfig(item, unit)
+              const { formatValue, formatLabel } = getFmt(unit)
+              const inRange = val >= cfg.recLo && val <= cfg.recHi
+              const badgeText = inRange ? 'Recommended' : val < cfg.recLo ? 'Below recommended' : 'Above recommended'
+              const badgeBg   = inRange ? '#DCF7DD' : '#FFF1C0'
+              const inputDisplay = item.key in rawInputs ? rawInputs[item.key] : String(val)
+
+              return (
+                <div key={item.key} style={{ padding: '10px 0' }}>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: '#0D1722', marginBottom: 6 }}>
+                    {item.label}
+                  </div>
+                  <div style={{ width: '50%' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+                      <span style={{ fontSize: 12, background: badgeBg, color: '#0D1722', borderRadius: 4, padding: '2px 8px', fontWeight: 400, whiteSpace: 'nowrap' }}>
+                        {badgeText}
+                      </span>
+                      <UnitToggle unit={unit} onChange={u => handleStaticExpand(item, u)} />
+                      <input
+                        type="number"
+                        value={inputDisplay}
+                        onChange={e => handleInputChange(item.key, e.target.value)}
+                        onBlur={e => handleInputBlur(item, e.target.value)}
+                        onFocus={e => e.target.select()}
+                        style={inputStyle}
+                        onMouseEnter={e => { e.target.style.borderColor = '#0066cc' }}
+                        onMouseLeave={e => { if (document.activeElement !== e.target) e.target.style.borderColor = '#cccccc' }}
+                      />
+                    </div>
+                    <GuardrailSlider
+                      noHeader
+                      value={val}
+                      onChange={v => set(item.key, v)}
+                      min={cfg.min} max={cfg.max} step={cfg.step}
+                      recLo={cfg.recLo} recHi={cfg.recHi}
+                      formatValue={formatValue}
+                      formatLabel={formatLabel}
+                    />
+                  </div>
+                  {!isLast && <Divider />}
+                </div>
+              )
+            }
+
+            /* ── Regular slider item ── */
             const unit = units[item.key]
             const val  = values[item.key]
             const cfg  = getConfig(item, unit)
             const { formatValue, formatLabel } = getFmt(unit)
-
-            // No impact items at 0 get a neutral "No adjustment" badge
-            const isZero = item.noImpact && val === 0
             const inRange = val >= cfg.recLo && val <= cfg.recHi
-            const badgeText = isZero       ? 'No adjustment'
-              : inRange                    ? 'Recommended'
-              : val < cfg.recLo            ? 'Below recommended'
-              :                              'Above recommended'
-            const badgeBg    = isZero ? '#F0F2F4' : inRange ? '#DCF7DD' : '#FFF1C0'
-            const badgeColor = isZero ? '#5E6976' : '#0D1722'
+            const badgeText = inRange ? 'Recommended' : val < cfg.recLo ? 'Below recommended' : 'Above recommended'
+            const badgeBg   = inRange ? '#DCF7DD' : '#FFF1C0'
             const inputDisplay = item.key in rawInputs ? rawInputs[item.key] : String(val)
 
             return (
@@ -227,7 +303,7 @@ export default function ConditionSliders() {
                 {/* Badge + toggle + input + slider — all capped at 50% width, left-aligned */}
                 <div style={{ width: '50%' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-                    <span style={{ fontSize: 12, background: badgeBg, color: badgeColor, borderRadius: 4, padding: '2px 8px', fontWeight: 400, whiteSpace: 'nowrap' }}>
+                    <span style={{ fontSize: 12, background: badgeBg, color: '#0D1722', borderRadius: 4, padding: '2px 8px', fontWeight: 400, whiteSpace: 'nowrap' }}>
                       {badgeText}
                     </span>
                     <UnitToggle unit={unit} onChange={u => changeUnit(item, u)} />

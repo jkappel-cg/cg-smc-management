@@ -113,7 +113,7 @@ function UnitToggle({ unit, onChange }) {
   )
 }
 
-const Divider = () => <div style={{ height: 1, background: '#f0f0f0', width: '50%', marginTop: 12 }} />
+const Divider = () => <div style={{ height: 1, background: '#f0f0f0', width: '100%', marginTop: 12 }} />
 
 export default function ConditionSliders() {
   const [values, setValues]             = useState(initValues)
@@ -207,12 +207,14 @@ export default function ConditionSliders() {
 
             /* ── "Not driveable" — no offer ── */
             if (item.badge) return (
-              <div key={item.key} style={{ padding: '10px 0' }}>
+              <div key={item.key} style={{ padding: '12px 0' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span style={{ fontSize: 14, fontWeight: 600, color: '#0D1722' }}>{item.label}</span>
-                  <span style={{ fontSize: 12, background: '#FFE2E2', color: '#0D1722', borderRadius: 4, padding: '2px 8px', fontWeight: 400 }}>
-                    No offer made
-                  </span>
+                  <div style={{ width: '55%' }}>
+                    <span style={{ fontSize: 12, background: '#FFE2E2', color: '#0D1722', borderRadius: 4, padding: '2px 8px', fontWeight: 400 }}>
+                      No offer made
+                    </span>
+                  </div>
                 </div>
                 {!isLast && <Divider />}
               </div>
@@ -225,10 +227,10 @@ export default function ConditionSliders() {
 
               if (!isExpanded) {
                 return (
-                  <div key={item.key} style={{ padding: '10px 0' }}>
+                  <div key={item.key} style={{ padding: '12px 0' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span style={{ fontSize: 14, fontWeight: 600, color: '#0D1722' }}>{item.label}</span>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <div style={{ width: '55%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <span style={{ fontSize: 12, color: '#5E6976' }}>No adjustment</span>
                         <UnitToggle unit={null} onChange={u => handleStaticExpand(item, u)} />
                       </div>
@@ -238,7 +240,7 @@ export default function ConditionSliders() {
                 )
               }
 
-              // Expanded — render full slider UI
+              // Expanded — label left, full slider right
               const val = values[item.key]
               const cfg = getConfig(item, unit)
               const { formatValue, formatLabel } = getFmt(unit)
@@ -248,36 +250,38 @@ export default function ConditionSliders() {
               const inputDisplay = item.key in rawInputs ? rawInputs[item.key] : String(val)
 
               return (
-                <div key={item.key} style={{ padding: '10px 0' }}>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: '#0D1722', marginBottom: 6 }}>
-                    {item.label}
-                  </div>
-                  <div style={{ width: '50%' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-                      <span style={{ fontSize: 12, background: badgeBg, color: '#0D1722', borderRadius: 4, padding: '2px 8px', fontWeight: 400, whiteSpace: 'nowrap' }}>
-                        {badgeText}
-                      </span>
-                      <UnitToggle unit={unit} onChange={u => handleStaticExpand(item, u)} />
-                      <input
-                        type="number"
-                        value={inputDisplay}
-                        onChange={e => handleInputChange(item.key, e.target.value)}
-                        onBlur={e => handleInputBlur(item, e.target.value)}
-                        onFocus={e => e.target.select()}
-                        style={inputStyle}
-                        onMouseEnter={e => { e.target.style.borderColor = '#0066cc' }}
-                        onMouseLeave={e => { if (document.activeElement !== e.target) e.target.style.borderColor = '#cccccc' }}
+                <div key={item.key} style={{ padding: '12px 0' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <span style={{ fontSize: 14, fontWeight: 600, color: '#0D1722' }}>{item.label}</span>
+                    <div style={{ width: '55%' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                        <span style={{ fontSize: 12, background: badgeBg, color: '#0D1722', borderRadius: 4, padding: '2px 8px', fontWeight: 400, whiteSpace: 'nowrap' }}>
+                          {badgeText}
+                        </span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <UnitToggle unit={unit} onChange={u => handleStaticExpand(item, u)} />
+                          <input
+                            type="number"
+                            value={inputDisplay}
+                            onChange={e => handleInputChange(item.key, e.target.value)}
+                            onBlur={e => handleInputBlur(item, e.target.value)}
+                            onFocus={e => e.target.select()}
+                            style={inputStyle}
+                            onMouseEnter={e => { e.target.style.borderColor = '#0066cc' }}
+                            onMouseLeave={e => { if (document.activeElement !== e.target) e.target.style.borderColor = '#cccccc' }}
+                          />
+                        </div>
+                      </div>
+                      <GuardrailSlider
+                        noHeader
+                        value={val}
+                        onChange={v => set(item.key, v)}
+                        min={cfg.min} max={cfg.max} step={cfg.step}
+                        recLo={cfg.recLo} recHi={cfg.recHi}
+                        formatValue={formatValue}
+                        formatLabel={formatLabel}
                       />
                     </div>
-                    <GuardrailSlider
-                      noHeader
-                      value={val}
-                      onChange={v => set(item.key, v)}
-                      min={cfg.min} max={cfg.max} step={cfg.step}
-                      recLo={cfg.recLo} recHi={cfg.recHi}
-                      formatValue={formatValue}
-                      formatLabel={formatLabel}
-                    />
                   </div>
                   {!isLast && <Divider />}
                 </div>
@@ -295,38 +299,40 @@ export default function ConditionSliders() {
             const inputDisplay = item.key in rawInputs ? rawInputs[item.key] : String(val)
 
             return (
-              <div key={item.key} style={{ padding: '10px 0' }}>
-                {/* Bold label at full width */}
-                <div style={{ fontSize: 14, fontWeight: 600, color: '#0D1722', marginBottom: 6 }}>
-                  {item.label}
-                </div>
-                {/* Badge + toggle + input + slider — all capped at 50% width, left-aligned */}
-                <div style={{ width: '50%' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-                    <span style={{ fontSize: 12, background: badgeBg, color: '#0D1722', borderRadius: 4, padding: '2px 8px', fontWeight: 400, whiteSpace: 'nowrap' }}>
-                      {badgeText}
-                    </span>
-                    <UnitToggle unit={unit} onChange={u => changeUnit(item, u)} />
-                    <input
-                      type="number"
-                      value={inputDisplay}
-                      onChange={e => handleInputChange(item.key, e.target.value)}
-                      onBlur={e => handleInputBlur(item, e.target.value)}
-                      onFocus={e => e.target.select()}
-                      style={inputStyle}
-                      onMouseEnter={e => { e.target.style.borderColor = '#0066cc' }}
-                      onMouseLeave={e => { if (document.activeElement !== e.target) e.target.style.borderColor = '#cccccc' }}
+              <div key={item.key} style={{ padding: '12px 0' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  {/* Left: label */}
+                  <span style={{ fontSize: 14, fontWeight: 600, color: '#0D1722' }}>{item.label}</span>
+                  {/* Right: badge upper-left, toggle+input upper-right, slider below */}
+                  <div style={{ width: '55%' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                      <span style={{ fontSize: 12, background: badgeBg, color: '#0D1722', borderRadius: 4, padding: '2px 8px', fontWeight: 400, whiteSpace: 'nowrap' }}>
+                        {badgeText}
+                      </span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <UnitToggle unit={unit} onChange={u => changeUnit(item, u)} />
+                        <input
+                          type="number"
+                          value={inputDisplay}
+                          onChange={e => handleInputChange(item.key, e.target.value)}
+                          onBlur={e => handleInputBlur(item, e.target.value)}
+                          onFocus={e => e.target.select()}
+                          style={inputStyle}
+                          onMouseEnter={e => { e.target.style.borderColor = '#0066cc' }}
+                          onMouseLeave={e => { if (document.activeElement !== e.target) e.target.style.borderColor = '#cccccc' }}
+                        />
+                      </div>
+                    </div>
+                    <GuardrailSlider
+                      noHeader
+                      value={val}
+                      onChange={v => set(item.key, v)}
+                      min={cfg.min} max={cfg.max} step={cfg.step}
+                      recLo={cfg.recLo} recHi={cfg.recHi}
+                      formatValue={formatValue}
+                      formatLabel={formatLabel}
                     />
                   </div>
-                  <GuardrailSlider
-                    noHeader
-                    value={val}
-                    onChange={v => set(item.key, v)}
-                    min={cfg.min} max={cfg.max} step={cfg.step}
-                    recLo={cfg.recLo} recHi={cfg.recHi}
-                    formatValue={formatValue}
-                    formatLabel={formatLabel}
-                  />
                 </div>
                 {!isLast && <Divider />}
               </div>

@@ -111,10 +111,10 @@ export default function ConditionSliders() {
 
   return (
     <div>
-      <p style={{ fontSize: 12, color: '#5E6976', marginBottom: 4 }}>
+      <p style={{ fontSize: 14, color: '#5E6976', marginBottom: 4 }}>
         We automatically adjust your offers based on the condition the consumer selects.
       </p>
-      <p style={{ fontSize: 12, color: '#5E6976', fontStyle: 'italic', marginBottom: 20 }}>
+      <p style={{ fontSize: 14, color: '#5E6976', fontStyle: 'italic', marginBottom: 20 }}>
         Example: If a consumer selects "Bad tires," your offer is reduced by $800 based on the rules below.
       </p>
 
@@ -122,9 +122,11 @@ export default function ConditionSliders() {
         <div key={section.header}>
           <div style={{
             fontSize: 14, fontWeight: 600, color: '#0D1722',
-            padding: '8px 0 8px',
+            paddingTop: 4,
+            paddingBottom: 2,
             borderTop: si > 0 ? '1px solid #e0e0e0' : 'none',
-            marginTop: si > 0 ? 8 : 0,
+            marginTop: si > 0 ? 20 : 0,
+            marginBottom: 0,
           }}>
             {section.header}
           </div>

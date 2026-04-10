@@ -1,112 +1,145 @@
 import { useState } from 'react'
 import GuardrailSlider from './GuardrailSlider.jsx'
 
+// Conversion factor: $250 per 1% (based on ~$25k average vehicle value)
+const FACTOR = 250
+
 const SECTIONS = [
   {
     header: 'Major impact',
     items: [
       { key: 'notDriveable', label: 'Not driveable', badge: true },
-      { key: 'badTires', label: 'Bad tires', default: 800, recLo: 600, recMax: 1000 },
-      { key: 'windshield', label: 'Windshield damage', default: 700, recLo: 500, recMax: 900 },
-      { key: 'fadedPaint', label: 'Faded paint', default: 750, recLo: 500, recMax: 1000 },
-      { key: 'rust', label: 'Rust', default: 1000, recLo: 700, recMax: 1200 },
-      { key: 'hailDamage', label: 'Hail damage', default: 1000, recLo: 700, recMax: 1200 },
-      { key: 'accidents', label: 'Accidents', isPercent: true, default: 5, recLo: 3, recMax: 15,
+      { key: 'badTires',    label: 'Bad tires',         default: 800,  recLo: 600, recMax: 1000, defaultUnit: '$' },
+      { key: 'windshield',  label: 'Windshield damage', default: 700,  recLo: 500, recMax: 900,  defaultUnit: '$' },
+      { key: 'fadedPaint',  label: 'Faded paint',       default: 750,  recLo: 500, recMax: 1000, defaultUnit: '$' },
+      { key: 'rust',        label: 'Rust',              default: 1000, recLo: 700, recMax: 1200, defaultUnit: '$' },
+      { key: 'hailDamage',  label: 'Hail damage',       default: 1000, recLo: 700, recMax: 1200, defaultUnit: '$' },
+      { key: 'accidents',   label: 'Accidents',          default: 5,    recLo: 3,   recMax: 15,   defaultUnit: '%',
         dollarDefault: 500, dollarRecLo: 300, dollarRecMax: 1000 },
     ],
   },
   {
     header: 'Moderate impact',
     items: [
-      { key: 'roughCondition', label: 'Rough condition', default: 300, recLo: 200, recMax: 500 },
-      { key: 'smoker', label: 'Smoker', default: 300, recLo: 150, recMax: 400 },
-      { key: 'dents', label: 'Dents', default: 300, recLo: 150, recMax: 500 },
-      { key: 'oneKey', label: 'One key only', default: 250, recLo: 150, recMax: 400 },
-      { key: 'mechanical', label: 'Mechanical defects', default: 250, recLo: 150, recMax: 400 },
+      { key: 'roughCondition', label: 'Rough condition',   default: 300, recLo: 200, recMax: 500, defaultUnit: '$' },
+      { key: 'smoker',         label: 'Smoker',            default: 300, recLo: 150, recMax: 400, defaultUnit: '$' },
+      { key: 'dents',          label: 'Dents',             default: 300, recLo: 150, recMax: 500, defaultUnit: '$' },
+      { key: 'oneKey',         label: 'One key only',      default: 250, recLo: 150, recMax: 400, defaultUnit: '$' },
+      { key: 'mechanical',     label: 'Mechanical defects',default: 250, recLo: 150, recMax: 400, defaultUnit: '$' },
     ],
   },
   {
     header: 'Minor impact',
     items: [
-      { key: 'scratches', label: 'Scratches', default: 100, recLo: 50, recMax: 200 },
-      { key: 'dings', label: 'Dings', default: 100, recLo: 50, recMax: 200 },
-      { key: 'chips', label: 'Chips', default: 100, recLo: 50, recMax: 200 },
-      { key: 'scuffs', label: 'Scuffs', default: 100, recLo: 50, recMax: 200 },
+      { key: 'scratches', label: 'Scratches', default: 100, recLo: 50, recMax: 200, defaultUnit: '$' },
+      { key: 'dings',     label: 'Dings',     default: 100, recLo: 50, recMax: 200, defaultUnit: '$' },
+      { key: 'chips',     label: 'Chips',     default: 100, recLo: 50, recMax: 200, defaultUnit: '$' },
+      { key: 'scuffs',    label: 'Scuffs',    default: 100, recLo: 50, recMax: 200, defaultUnit: '$' },
     ],
   },
   {
     header: 'No impact',
     items: [
-      { key: 'aftermarket', label: 'Aftermarket parts', static: true },
-      { key: 'fadingPaint', label: 'Fading paint', static: true },
-      { key: 'manual', label: 'Manual transmission', static: true },
+      { key: 'aftermarket', label: 'Aftermarket parts',   static: true },
+      { key: 'fadingPaint', label: 'Fading paint',        static: true },
+      { key: 'manual',      label: 'Manual transmission', static: true },
     ],
   },
 ]
 
 function initValues() {
   const vals = {}
-  for (const section of SECTIONS) {
-    for (const item of section.items) {
-      if (!item.badge && !item.static) {
-        vals[item.key] = item.default
-      }
-    }
-  }
+  for (const s of SECTIONS) for (const item of s.items)
+    if (!item.badge && !item.static) vals[item.key] = item.default
   return vals
 }
 
-function fmtDollar(v) {
-  if (v === 0) return 'No deduction'
-  return `−$${v.toLocaleString()}`
+function initUnits() {
+  const u = {}
+  for (const s of SECTIONS) for (const item of s.items)
+    if (!item.badge && !item.static) u[item.key] = item.defaultUnit || '$'
+  return u
 }
-function fmtDollarLabel(v) {
-  return v >= 1000 ? `$${v / 1000}k` : `$${v}`
+
+// Get slider config (min/max/recLo/recHi/step) for item in a given unit
+function getConfig(item, unit) {
+  if (item.dollarDefault) {
+    // Accidents: explicit values for each unit
+    if (unit === '%') return { min: 0, max: 30,   step: 1,   recLo: item.recLo,       recHi: item.recMax }
+    else              return { min: 0, max: item.dollarRecMax * 2, step: 50, recLo: item.dollarRecLo, recHi: item.dollarRecMax }
+  }
+  if (unit === '$') return { min: 0, max: item.recMax * 2, step: 50, recLo: item.recLo, recHi: item.recMax }
+  // % mode for $-native items: convert via FACTOR
+  const pLo  = Math.round((item.recLo  / FACTOR) * 10) / 10
+  const pHi  = Math.round((item.recMax / FACTOR) * 10) / 10
+  const pMax = Math.round((item.recMax * 2 / FACTOR) * 10) / 10
+  return { min: 0, max: pMax, step: 0.5, recLo: pLo, recHi: pHi }
 }
-function fmtPct(v) {
-  if (v === 0) return 'No deduction'
-  return `−${v}%`
-}
-function fmtPctLabel(v) {
-  return `${v}%`
+
+function getFmt(unit) {
+  if (unit === '$') return {
+    formatValue: v => v === 0 ? 'No deduction' : `−$${v.toLocaleString()}`,
+    formatLabel: v => v >= 1000 ? `$${v / 1000}k` : `$${v}`,
+  }
+  return {
+    formatValue: v => v === 0 ? 'No deduction' : `−${v}%`,
+    formatLabel: v => `${v}%`,
+  }
 }
 
 function UnitToggle({ unit, onChange }) {
   return (
-    <div style={{ display: 'inline-flex', border: '1px solid #cccccc', borderRadius: 4, overflow: 'hidden', marginLeft: 8 }}>
-      {['%', '$'].map(u => (
-        <button
-          key={u}
-          onClick={() => onChange(u)}
-          style={{
-            padding: '2px 10px',
-            fontSize: 12,
-            background: unit === u ? '#0763D3' : 'transparent',
-            color: unit === u ? '#fff' : '#555',
-            border: 'none',
-            cursor: 'pointer',
-            fontWeight: unit === u ? 600 : 400,
-          }}
-        >
-          {u}
-        </button>
+    <div style={{ display: 'inline-flex', border: '1px solid #cccccc', borderRadius: 4, overflow: 'hidden' }}>
+      {['$', '%'].map(u => (
+        <button key={u} onClick={() => onChange(u)} style={{
+          padding: '2px 8px', fontSize: 12,
+          background: unit === u ? '#0763D3' : 'transparent',
+          color: unit === u ? '#fff' : '#5E6976',
+          border: 'none', cursor: 'pointer', fontWeight: 400,
+        }}>{u}</button>
       ))}
     </div>
   )
 }
 
-export default function ConditionSliders() {
-  const [values, setValues] = useState(initValues)
-  const [accidentsUnit, setAccidentsUnit] = useState('%')
+const Divider = () => <div style={{ height: 1, background: '#f0f0f0', width: '50%', marginTop: 12 }} />
 
-  function set(key, val) {
-    setValues(v => ({ ...v, [key]: val }))
+export default function ConditionSliders() {
+  const [values, setValues]     = useState(initValues)
+  const [units, setUnits]       = useState(initUnits)
+  const [rawInputs, setRawInputs] = useState({}) // string being typed, cleared on blur
+
+  function set(key, val) { setValues(v => ({ ...v, [key]: val })) }
+
+  function changeUnit(item, newUnit) {
+    const oldUnit = units[item.key]
+    if (oldUnit === newUnit) return
+    const cur = values[item.key]
+    let next
+    if (item.dollarDefault) {
+      next = newUnit === '%' ? item.default : item.dollarDefault
+    } else if (oldUnit === '$') {
+      next = Math.round((cur / FACTOR) * 10) / 10
+    } else {
+      next = Math.round(cur * FACTOR)
+    }
+    setUnits(u => ({ ...u, [item.key]: newUnit }))
+    setValues(v => ({ ...v, [item.key]: next }))
+    setRawInputs(r => { const n = { ...r }; delete n[item.key]; return n })
   }
 
-  function handleUnitChange(u) {
-    setAccidentsUnit(u)
-    const accItem = SECTIONS[0].items.find(i => i.key === 'accidents')
-    set('accidents', u === '%' ? accItem.default : accItem.dollarDefault)
+  function handleInputChange(key, raw) {
+    setRawInputs(r => ({ ...r, [key]: raw }))
+  }
+
+  function handleInputBlur(item, raw) {
+    const unit = units[item.key]
+    const cfg  = getConfig(item, unit)
+    const parsed = parseFloat(raw)
+    if (!isNaN(parsed) && parsed >= 0) {
+      set(item.key, Math.max(cfg.min, Math.min(cfg.max, parsed)))
+    }
+    setRawInputs(r => { const n = { ...r }; delete n[item.key]; return n })
   }
 
   return (
@@ -120,13 +153,12 @@ export default function ConditionSliders() {
 
       {SECTIONS.map((section, si) => (
         <div key={section.header}>
+          {/* Section header */}
           <div style={{
             fontSize: 14, fontWeight: 600, color: '#0D1722',
-            paddingTop: 4,
-            paddingBottom: 2,
+            paddingTop: 4, paddingBottom: 6,
             borderTop: si > 0 ? '1px solid #e0e0e0' : 'none',
             marginTop: si > 0 ? 20 : 0,
-            marginBottom: 0,
           }}>
             {section.header}
           </div>
@@ -134,89 +166,86 @@ export default function ConditionSliders() {
           {section.items.map((item, idx) => {
             const isLast = idx === section.items.length - 1
 
-            // Static "no offer made" badge
-            if (item.badge) {
-              return (
-                <div key={item.key} style={{
-                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                  padding: '12px 0',
-                  borderBottom: isLast ? 'none' : '1px solid #f0f0f0',
-                }}>
-                  <span style={{ fontSize: 14, color: '#0D1722' }}>{item.label}</span>
-                  <span style={{
-                    fontSize: 12, background: '#FFE2E2', color: '#0D1722',
-                    borderRadius: 4, padding: '2px 8px', fontWeight: 500,
-                  }}>No offer made</span>
+            /* ── "Not driveable" — no offer ── */
+            if (item.badge) return (
+              <div key={item.key} style={{ padding: '10px 0' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: 14, fontWeight: 600, color: '#0D1722' }}>{item.label}</span>
+                  <span style={{ fontSize: 12, background: '#FFE2E2', color: '#0D1722', borderRadius: 4, padding: '2px 8px', fontWeight: 400 }}>
+                    No offer made
+                  </span>
                 </div>
-              )
-            }
+                {!isLast && <Divider />}
+              </div>
+            )
 
-            // Static "no adjustment"
-            if (item.static) {
-              return (
-                <div key={item.key} style={{
-                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                  padding: '12px 0',
-                  borderBottom: isLast ? 'none' : '1px solid #f0f0f0',
-                }}>
-                  <span style={{ fontSize: 14, color: '#0D1722' }}>{item.label}</span>
+            /* ── Static "no adjustment" ── */
+            if (item.static) return (
+              <div key={item.key} style={{ padding: '10px 0' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: 14, fontWeight: 600, color: '#0D1722' }}>{item.label}</span>
                   <span style={{ fontSize: 12, color: '#5E6976' }}>No adjustment</span>
                 </div>
-              )
-            }
+                {!isLast && <Divider />}
+              </div>
+            )
 
-            // Accidents with unit toggle
-            if (item.isPercent) {
-              const isPct = accidentsUnit === '%'
-              const recLo = isPct ? item.recLo : item.dollarRecLo
-              const recMax = isPct ? item.recMax : item.dollarRecMax
-              const sliderMax = recMax * 2
-              return (
-                <div key={item.key} style={{
-                  padding: '12px 0',
-                  borderBottom: isLast ? 'none' : '1px solid #f0f0f0',
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
-                    <span style={{ fontSize: 14, color: '#0D1722' }}>{item.label}</span>
-                    <UnitToggle unit={accidentsUnit} onChange={handleUnitChange} />
-                  </div>
-                  <div style={{ maxWidth: '50%' }}>
-                    <GuardrailSlider
-                      value={values[item.key]}
-                      onChange={v => set(item.key, v)}
-                      min={0}
-                      max={isPct ? 30 : sliderMax}
-                      step={isPct ? 1 : 50}
-                      recLo={recLo}
-                      recHi={recMax}
-                      formatValue={isPct ? fmtPct : fmtDollar}
-                      formatLabel={isPct ? fmtPctLabel : fmtDollarLabel}
+            /* ── Slider item ── */
+            const unit = units[item.key]
+            const val  = values[item.key]
+            const cfg  = getConfig(item, unit)
+            const { formatValue, formatLabel } = getFmt(unit)
+            const inRange = val >= cfg.recLo && val <= cfg.recHi
+            const badgeText = inRange ? 'Recommended' : val < cfg.recLo ? 'Below recommended' : 'Above recommended'
+            const badgeBg   = inRange ? '#DCF7DD' : '#FFF1C0'
+            const inputDisplay = item.key in rawInputs ? rawInputs[item.key] : String(val)
+
+            return (
+              <div key={item.key} style={{ padding: '10px 0' }}>
+                {/* Header: bold label left — badge + unit toggle + input right */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                  <span style={{ fontSize: 14, fontWeight: 600, color: '#0D1722' }}>{item.label}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ fontSize: 12, background: badgeBg, color: '#0D1722', borderRadius: 4, padding: '2px 8px', fontWeight: 400, whiteSpace: 'nowrap' }}>
+                      {badgeText}
+                    </span>
+                    <UnitToggle unit={unit} onChange={u => changeUnit(item, u)} />
+                    <input
+                      type="number"
+                      value={inputDisplay}
+                      onChange={e => handleInputChange(item.key, e.target.value)}
+                      onBlur={e => handleInputBlur(item, e.target.value)}
+                      onFocus={e => e.target.select()}
+                      style={{
+                        width: 68, height: 28,
+                        border: '1px solid #cccccc',
+                        borderRadius: 4,
+                        fontSize: 14,
+                        padding: '2px 8px',
+                        textAlign: 'right',
+                        outline: 'none',
+                        color: '#0D1722',
+                      }}
+                      onMouseEnter={e => { e.target.style.borderColor = '#0066cc' }}
+                      onMouseLeave={e => { if (document.activeElement !== e.target) e.target.style.borderColor = '#cccccc' }}
                     />
                   </div>
                 </div>
-              )
-            }
 
-            // Standard dollar deduction slider
-            return (
-              <div key={item.key} style={{
-                padding: '12px 0',
-                borderBottom: isLast ? 'none' : '1px solid #f0f0f0',
-              }}>
+                {/* Slider track only (no header) */}
                 <div style={{ maxWidth: '50%' }}>
                   <GuardrailSlider
-                    value={values[item.key]}
+                    noHeader
+                    value={val}
                     onChange={v => set(item.key, v)}
-                    min={0}
-                    max={item.recMax * 2}
-                    step={50}
-                    recLo={item.recLo}
-                    recHi={item.recMax}
-                    formatValue={fmtDollar}
-                    formatLabel={fmtDollarLabel}
-                    conditionLabel={item.label}
+                    min={cfg.min} max={cfg.max} step={cfg.step}
+                    recLo={cfg.recLo} recHi={cfg.recHi}
+                    formatValue={formatValue}
+                    formatLabel={formatLabel}
                   />
                 </div>
+
+                {!isLast && <Divider />}
               </div>
             )
           })}

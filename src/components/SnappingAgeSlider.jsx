@@ -19,7 +19,7 @@ export default function SnappingAgeSlider({ value, onChange }) {
           fontSize: 12,
           background: inRange ? '#DCF7DD' : '#FFF1C0',
           color: '#0D1722',
-          borderRadius: 4, padding: '2px 8px', fontWeight: 500,
+          borderRadius: 4, padding: '2px 8px', fontWeight: 400,
         }}>
           {inRange ? 'Recommended' : 'Outside recommended range'}
         </span>
@@ -29,22 +29,22 @@ export default function SnappingAgeSlider({ value, onChange }) {
       </div>
 
       {/* Track */}
-      <div style={{ position: 'relative', height: 32 }}>
+      <div style={{ position: 'relative', height: 24 }}>
         <div style={{
           position: 'absolute', top: '50%', left: 0, right: 0,
-          height: 10, background: '#E5E5E5', borderRadius: 5,
+          height: 6, background: '#E5E5E5', borderRadius: 3,
           transform: 'translateY(-50%)',
         }} />
         <div style={{
           position: 'absolute', top: '50%',
           left: 0, width: `${recPct}%`,
-          height: 10, background: GREEN_TRACK, borderRadius: 5,
+          height: 6, background: GREEN_TRACK, borderRadius: 3,
           transform: 'translateY(-50%)', pointerEvents: 'none',
         }} />
         <div style={{
           position: 'absolute', top: '50%',
           left: `${valPct}%`,
-          width: 27, height: 27,
+          width: 24, height: 24,
           background: '#fff',
           border: `1px solid ${thumbColor}`,
           borderRadius: '50%',

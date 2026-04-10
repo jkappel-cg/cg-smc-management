@@ -186,7 +186,7 @@ export default function ConditionSliders() {
       <p style={{ fontSize: 14, color: '#5E6976', marginBottom: 4 }}>
         We automatically adjust your offers based on the condition the consumer selects.
       </p>
-      <p style={{ fontSize: 14, color: '#5E6976', fontStyle: 'italic', marginBottom: 20 }}>
+      <p style={{ fontSize: 14, color: '#0D1722', marginBottom: 20 }}>
         Example: If a consumer selects "Bad tires," your offer is reduced by $800 based on the rules below.
       </p>
 

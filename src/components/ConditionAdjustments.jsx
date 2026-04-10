@@ -69,10 +69,10 @@ function ConditionRow({ label, value, badge }) {
 export default function ConditionAdjustments() {
   return (
     <div>
-      <p style={{ fontSize: 12, color: '#5E6976', marginBottom: 4 }}>
+      <p style={{ fontSize: 14, color: '#0D1722', marginBottom: 4 }}>
         We automatically adjust your offers based on the condition the consumer selects.
       </p>
-      <p style={{ fontSize: 12, color: '#5E6976', fontStyle: 'italic', marginBottom: 16 }}>
+      <p style={{ fontSize: 14, color: '#0D1722', marginBottom: 16 }}>
         Example: If a consumer selects "Bad tires," your offer is reduced by $800 based on the rules below.
       </p>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>

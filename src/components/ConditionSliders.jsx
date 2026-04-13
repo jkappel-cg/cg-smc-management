@@ -186,7 +186,7 @@ export default function ConditionSliders() {
       <p style={{ fontSize: 14, color: '#5E6976', marginBottom: 4 }}>
         We automatically adjust your offers based on the condition the consumer selects.
       </p>
-      <p style={{ fontSize: 14, color: '#5E6976', fontStyle: 'italic', marginBottom: 20 }}>
+      <p style={{ fontSize: 14, color: '#0D1722', marginBottom: 20 }}>
         Example: If a consumer selects "Bad tires," your offer is reduced by $800 based on the rules below.
       </p>
 
@@ -245,8 +245,9 @@ export default function ConditionSliders() {
               const cfg = getConfig(item, unit)
               const { formatValue, formatLabel } = getFmt(unit)
               const inRange = val >= cfg.recLo && val <= cfg.recHi
-              const badgeText = inRange ? 'Recommended' : val < cfg.recLo ? 'Below recommended' : 'Above recommended'
-              const badgeBg   = inRange ? '#DCF7DD' : '#FFF1C0'
+              const badgeText = val === 0 ? 'No adjustment' : inRange ? 'Recommended' : val < cfg.recLo ? 'Below recommended' : 'Above recommended'
+              const badgeBg   = val === 0 ? '#F0F2F4' : inRange ? '#DCF7DD' : '#FFF1C0'
+              const badgeColor = val === 0 ? '#5E6976' : '#0D1722'
               const inputDisplay = item.key in rawInputs ? rawInputs[item.key] : String(val)
 
               return (
@@ -255,7 +256,7 @@ export default function ConditionSliders() {
                     <span style={{ fontSize: 14, fontWeight: 600, color: '#0D1722' }}>{item.label}</span>
                     <div style={{ width: '55%' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                        <span style={{ fontSize: 12, background: badgeBg, color: '#0D1722', borderRadius: 4, padding: '2px 8px', fontWeight: 400, whiteSpace: 'nowrap' }}>
+                        <span style={{ fontSize: 12, background: badgeBg, color: badgeColor, borderRadius: 4, padding: '2px 8px', fontWeight: 400, whiteSpace: 'nowrap' }}>
                           {badgeText}
                         </span>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -294,8 +295,9 @@ export default function ConditionSliders() {
             const cfg  = getConfig(item, unit)
             const { formatValue, formatLabel } = getFmt(unit)
             const inRange = val >= cfg.recLo && val <= cfg.recHi
-            const badgeText = inRange ? 'Recommended' : val < cfg.recLo ? 'Below recommended' : 'Above recommended'
-            const badgeBg   = inRange ? '#DCF7DD' : '#FFF1C0'
+            const badgeText = val === 0 ? 'No adjustment' : inRange ? 'Recommended' : val < cfg.recLo ? 'Below recommended' : 'Above recommended'
+            const badgeBg   = val === 0 ? '#F0F2F4' : inRange ? '#DCF7DD' : '#FFF1C0'
+            const badgeColor = val === 0 ? '#5E6976' : '#0D1722'
             const inputDisplay = item.key in rawInputs ? rawInputs[item.key] : String(val)
 
             return (
@@ -306,7 +308,7 @@ export default function ConditionSliders() {
                   {/* Right: badge upper-left, toggle+input upper-right, slider below */}
                   <div style={{ width: '55%' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                      <span style={{ fontSize: 12, background: badgeBg, color: '#0D1722', borderRadius: 4, padding: '2px 8px', fontWeight: 400, whiteSpace: 'nowrap' }}>
+                      <span style={{ fontSize: 12, background: badgeBg, color: badgeColor, borderRadius: 4, padding: '2px 8px', fontWeight: 400, whiteSpace: 'nowrap' }}>
                         {badgeText}
                       </span>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>

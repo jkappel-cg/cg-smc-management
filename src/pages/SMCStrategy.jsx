@@ -11,6 +11,7 @@ import GuardrailSlider from '../components/GuardrailSlider.jsx'
 import SnappingAgeSlider from '../components/SnappingAgeSlider.jsx'
 import LaterConcepts from '../components/LaterConcepts.jsx'
 import SaveBar from '../components/SaveBar.jsx'
+import CustomRules from '../components/CustomRules.jsx'
 
 const BOOK_VALUE_OPTIONS = [
   {
@@ -280,15 +281,7 @@ export default function SMCStrategy() {
               </SectionCard>
 
               {/* Section 4 — Custom Rules (Next only) */}
-              {phase === 'Next' && (
-                <SectionCard title="Custom rules">
-                  <div style={{ padding: '24px 0', textAlign: 'center' }}>
-                    <span style={{ fontSize: 14, color: '#5E6976' }}>
-                      Custom rules coming soon. Add vehicle-specific overrides for makes, models, and more.
-                    </span>
-                  </div>
-                </SectionCard>
-              )}
+              {phase === 'Next' && <CustomRules />}
             </>
           )}
 

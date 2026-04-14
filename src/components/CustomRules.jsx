@@ -1,6 +1,5 @@
 import { useState } from 'react'
 
-const VEHICLE_TYPES = ['SUV', 'Sedan', 'Truck', 'Coupe', 'Minivan', 'Van', 'Wagon', 'Convertible']
 const CAR_MAKES = [
   'Acura','Audi','BMW','Buick','Cadillac','Chevrolet','Chrysler','Dodge',
   'Ford','Genesis','GMC','Honda','Hyundai','Infiniti','Jeep','Kia',
@@ -10,20 +9,23 @@ const CAR_MAKES = [
 const CURRENT_YEAR = new Date().getFullYear()
 
 const CONDITION_OPTIONS = [
-  { value: 'all',         label: 'All vehicles' },
-  { value: 'mileage',     label: 'Mileage' },
-  { value: 'vehicleType', label: 'Vehicle type' },
-  { value: 'make',        label: 'Make / Model' },
-  { value: 'modelYear',   label: 'Model year' },
+  { value: 'mileage',   label: 'Mileage' },
+  { value: 'make',      label: 'Make / Model' },
+  { value: 'modelYear', label: 'Year' },
 ]
 
+// Placeholder model lists per make (prototype)
+const MAKE_MODELS = {
+  default: ['All models', 'Model A', 'Model B', 'Model C'],
+}
+function getModels() { return MAKE_MODELS.default }
+
 const defaultCondition = () => ({
-  type: 'all',
+  type: null,            // null = unselected, must pick one
   mileageOperator: 'over',
   mileageValue: '',
-  vehicleType: 'SUV',
   make: 'Ford',
-  model: '',
+  model: 'All models',
   modelYearOperator: 'before',
   modelYearValue: '',
 })
@@ -38,15 +40,13 @@ const defaultForm = () => ({
 })
 
 function getConditionText(cond) {
-  if (cond.type === 'all') return 'all vehicles'
   if (cond.type === 'mileage') {
     const val = cond.mileageValue ? Number(cond.mileageValue).toLocaleString() : '___'
     return `vehicles ${cond.mileageOperator} ${val} miles`
   }
-  if (cond.type === 'vehicleType') return `${cond.vehicleType}s`
   if (cond.type === 'make') {
-    if (cond.model) return `${cond.make} ${cond.model}s`
-    return `${cond.make} vehicles`
+    const modelPart = cond.model && cond.model !== 'All models' ? ` ${cond.model}` : ''
+    return `${cond.make}${modelPart} vehicles`
   }
   if (cond.type === 'modelYear') return `vehicles ${cond.modelYearOperator} ${cond.modelYearValue || '____'}`
   return 'vehicles'
@@ -64,17 +64,16 @@ function getSummary({ action, reducePercent, increasePercent, conditions }) {
 
 function getImpact(action, conditions) {
   if (!action) return null
-  const hasAll    = conditions.some(c => c.type === 'all')
-  const hasBroad  = conditions.some(c => c.type === 'vehicleType' || c.type === 'make')
-  if (action === 'exclude' && (hasAll || hasBroad)) return 'High impact'
+  const hasBroad = conditions.some(c => c.type === 'make')
+  if (action === 'exclude' && hasBroad) return 'High impact'
   if (action === 'exclude') return 'Medium impact'
-  if ((action === 'reduce' || action === 'increase') && hasAll) return 'Medium impact'
   return null
 }
 
 function isValid({ action, conditions }) {
   if (!action) return false
   return conditions.every(c => {
+    if (!c.type) return false                                        // must select a condition type
     if (c.type === 'mileage'   && !c.mileageValue)   return false
     if (c.type === 'modelYear' && !c.modelYearValue) return false
     return true
@@ -227,6 +226,13 @@ function ConditionRow({ cond, idx, total, onChange, onRemove, inputStyle }) {
         )}
       </div>
 
+      {/* Hint when nothing selected yet */}
+      {!cond.type && (
+        <div style={{ fontSize: 12, color: '#9AA3AD', marginTop: 8 }}>
+          Select a condition above
+        </div>
+      )}
+
       {cond.type === 'mileage' && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10 }}>
           <InlineSelect
@@ -239,23 +245,12 @@ function ConditionRow({ cond, idx, total, onChange, onRemove, inputStyle }) {
             type="number"
             value={cond.mileageValue}
             onChange={e => onChange(idx, 'mileageValue', e.target.value)}
-            placeholder="e.g. 80000"
+            placeholder="e.g. 80,000"
             style={{ ...inputStyle, width: 120 }}
             onFocus={e => e.target.style.borderColor = '#0763D3'}
             onBlur={e => e.target.style.borderColor = '#cccccc'}
           />
           <span style={{ fontSize: 14, color: '#5E6976' }}>miles</span>
-        </div>
-      )}
-
-      {cond.type === 'vehicleType' && (
-        <div style={{ marginTop: 10 }}>
-          <InlineSelect
-            value={cond.vehicleType}
-            onChange={v => onChange(idx, 'vehicleType', v)}
-            options={VEHICLE_TYPES.map(t => ({ value: t, label: t }))}
-            width={160}
-          />
         </div>
       )}
 
@@ -267,14 +262,11 @@ function ConditionRow({ cond, idx, total, onChange, onRemove, inputStyle }) {
             options={CAR_MAKES.map(m => ({ value: m, label: m }))}
             width={160}
           />
-          <input
-            type="text"
-            value={cond.model}
-            onChange={e => onChange(idx, 'model', e.target.value)}
-            placeholder="Model (optional)"
-            style={{ ...inputStyle, width: 140 }}
-            onFocus={e => e.target.style.borderColor = '#0763D3'}
-            onBlur={e => e.target.style.borderColor = '#cccccc'}
+          <InlineSelect
+            value={cond.model || 'All models'}
+            onChange={v => onChange(idx, 'model', v)}
+            options={getModels().map(m => ({ value: m, label: m }))}
+            width={150}
           />
         </div>
       )}

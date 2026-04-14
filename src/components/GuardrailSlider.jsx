@@ -1,6 +1,7 @@
 export default function GuardrailSlider({
   value, onChange, min, max, step = 1,
   recLo, recHi, formatValue, formatLabel, conditionLabel, noHeader = false,
+  rawInput, onRawInput, onRawBlur,
 }) {
   const lo = recLo ?? min
   const isTwoSided = recLo != null && recLo > min
@@ -38,9 +39,26 @@ export default function GuardrailSlider({
           }
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             {conditionLabel && badge}
-            <span style={{ fontSize: 14, fontWeight: 400, color: '#0D1722', whiteSpace: 'nowrap' }}>
-              {formatValue(value)}
-            </span>
+            {onRawInput ? (
+              <input
+                type="text"
+                value={rawInput ?? formatValue(value)}
+                onChange={e => onRawInput(e.target.value)}
+                onBlur={e => onRawBlur && onRawBlur(e.target.value)}
+                onFocus={e => e.target.select()}
+                style={{
+                  width: 64, height: 28, padding: '2px 6px',
+                  fontSize: 14, textAlign: 'right', color: '#0D1722',
+                  border: '1px solid #cccccc', borderRadius: 4, outline: 'none',
+                }}
+                onMouseEnter={e => e.target.style.borderColor = '#0066cc'}
+                onMouseLeave={e => { if (document.activeElement !== e.target) e.target.style.borderColor = '#cccccc' }}
+              />
+            ) : (
+              <span style={{ fontSize: 14, fontWeight: 400, color: '#0D1722', whiteSpace: 'nowrap' }}>
+                {formatValue(value)}
+              </span>
+            )}
           </div>
         </div>
       )}

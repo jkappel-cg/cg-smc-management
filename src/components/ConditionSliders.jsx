@@ -208,7 +208,7 @@ export default function ConditionSliders() {
             if (item.badge) return (
               <div key={item.key} style={{ padding: '12px 0' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: 14, fontWeight: 600, color: '#0D1722' }}>{item.label}</span>
+                  <span style={{ fontSize: 14, fontWeight: 400, color: '#0D1722' }}>{item.label}</span>
                   <div style={{ width: '55%' }}>
                     <span style={{ fontSize: 12, background: '#FFE2E2', color: '#0D1722', borderRadius: 4, padding: '2px 8px', fontWeight: 400 }}>
                       No offer made
@@ -228,7 +228,7 @@ export default function ConditionSliders() {
                 return (
                   <div key={item.key} style={{ padding: '12px 0' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: 14, fontWeight: 600, color: '#0D1722' }}>{item.label}</span>
+                      <span style={{ fontSize: 14, fontWeight: 400, color: '#0D1722' }}>{item.label}</span>
                       <div style={{ width: '55%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <span style={{ fontSize: 12, color: '#5E6976' }}>No adjustment</span>
                         <UnitToggle unit={null} onChange={u => handleStaticExpand(item, u)} />
@@ -252,7 +252,7 @@ export default function ConditionSliders() {
               return (
                 <div key={item.key} style={{ padding: '12px 0' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <span style={{ fontSize: 14, fontWeight: 600, color: '#0D1722' }}>{item.label}</span>
+                    <span style={{ fontSize: 14, fontWeight: 400, color: '#0D1722' }}>{item.label}</span>
                     <div style={{ width: '55%' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                         <span style={{ fontSize: 12, background: badgeBg, color: badgeColor, borderRadius: 4, padding: '2px 8px', fontWeight: 400, whiteSpace: 'nowrap' }}>
@@ -303,7 +303,7 @@ export default function ConditionSliders() {
               <div key={item.key} style={{ padding: '12px 0' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   {/* Left: label */}
-                  <span style={{ fontSize: 14, fontWeight: 600, color: '#0D1722' }}>{item.label}</span>
+                  <span style={{ fontSize: 14, fontWeight: 400, color: '#0D1722' }}>{item.label}</span>
                   {/* Right: badge upper-left, toggle+input upper-right, slider below */}
                   <div style={{ width: '55%' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>

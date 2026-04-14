@@ -23,17 +23,42 @@ const BARS = [
   { year: '15', pct: 1,  stopIndex: 3 },
   { year: '16', pct: 1,  stopIndex: 4 },
 ]
+const NUM_BARS = BARS.length  // 16
 const MAX_BAR_PCT = Math.max(...BARS.map(b => b.pct))
 const CHART_HEIGHT = 100
 
-// X-axis tick positions — show year labels only at key breakpoints
-const TICKS = ['1', '5', '10', '15']
+// Align each slider stop to the right edge of its corresponding bar in the flex chart.
+// Bar i (0-based) occupies fraction (i+1)/NUM_BARS of the total width.
+// "2 yrs"   → right edge of bar index 1  → 2/16  = 12.5%
+// "5 yrs"   → right edge of bar index 4  → 5/16  = 31.25%
+// "10 yrs"  → right edge of bar index 9  → 10/16 = 62.5%
+// "15 yrs"  → right edge of bar index 14 → 15/16 = 93.75%
+// "No limit"→ right edge of bar index 15 → 16/16 = 100%
+const SLIDER_STOP_PCTS = [2, 5, 10, 15, 16].map(yr => (yr / NUM_BARS) * 100)
+
+// X-axis tick labels and their bar positions
+const X_TICKS = [
+  { label: 'Yr 1',  barIdx: 0  },
+  { label: 'Yr 5',  barIdx: 4  },
+  { label: 'Yr 10', barIdx: 9  },
+  { label: 'Yr 15', barIdx: 14 },
+  { label: 'Yr 16+',barIdx: 15 },
+]
+
+const REC_HI_IDX = 2  // "10 yrs"
+const GREEN = '#078A0B'
 
 export default function LaterConcepts({ ageRange, onAgeRangeChange, biddingRadius, onBiddingRadiusChange }) {
-  const hiIdx = ageRange[1]
+  const [lo, hi] = ageRange
   const coveredPct = BARS
-    .filter(b => b.stopIndex <= hiIdx)
+    .filter(b => b.stopIndex <= hi)
     .reduce((sum, b) => sum + b.pct, 0)
+
+  const inRange = hi <= REC_HI_IDX
+  const STOPS = ['2 yrs', '5 yrs', '10 yrs', '15 yrs', 'No limit']
+  const badgeText = inRange ? 'Recommended' : 'Outside recommended range'
+  const badgeBg = inRange ? '#DCF7DD' : '#FFF1C0'
+  const displayText = lo === hi ? STOPS[lo] : `${STOPS[lo]} – ${STOPS[hi]}`
 
   return (
     <div>
@@ -49,13 +74,27 @@ export default function LaterConcepts({ ageRange, onAgeRangeChange, biddingRadiu
       {/* Card 1 — Leads Distribution Impact */}
       <SectionCard title="Available leads by vehicle age">
         <div style={{ padding: '20px 0' }}>
-          <p style={{ fontSize: 14, color: '#5E6976', marginBottom: 12 }}>
+
+          {/* Badge + range — above the chart */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <span style={{
+              fontSize: 12, background: badgeBg, color: '#0D1722',
+              borderRadius: 4, padding: '2px 8px', fontWeight: 400,
+            }}>
+              {badgeText}
+            </span>
+            <span style={{ fontSize: 14, fontWeight: 400, color: '#0D1722' }}>
+              {displayText}
+            </span>
+          </div>
+
+          <p style={{ fontSize: 14, color: '#5E6976', marginBottom: 8 }}>
             This chart shows how your lead volume is distributed across vehicle ages.
             Restricting your max vehicle age cuts off the bars to the right — directly
             reducing the share of leads you're eligible to receive.
           </p>
 
-          {/* Coverage summary — above chart */}
+          {/* Coverage summary */}
           <p style={{ fontSize: 14, color: '#5E6976', marginBottom: 10 }}>
             <span style={{ fontWeight: 600, color: '#0D1722' }}>~{coveredPct}%</span> of available leads eligible with current age setting
           </p>
@@ -70,20 +109,17 @@ export default function LaterConcepts({ ageRange, onAgeRangeChange, biddingRadiu
             marginBottom: 6,
           }}>
             {BARS.map(bar => {
-              const included = bar.stopIndex <= hiIdx
+              const included = bar.stopIndex <= hi
               const barH = Math.round((bar.pct / MAX_BAR_PCT) * CHART_HEIGHT)
               return (
-                <div
-                  key={bar.year}
-                  style={{
-                    flex: 1,
-                    height: barH,
-                    background: included ? '#09AD0E' : '#C8CDD2',
-                    borderRadius: '3px 3px 0 0',
-                    transition: 'background 0.2s',
-                    minWidth: 0,
-                  }}
-                />
+                <div key={bar.year} style={{
+                  flex: 1,
+                  height: barH,
+                  background: included ? '#09AD0E' : '#C8CDD2',
+                  borderRadius: '3px 3px 0 0',
+                  transition: 'background 0.2s',
+                  minWidth: 0,
+                }} />
               )
             })}
           </div>
@@ -91,33 +127,33 @@ export default function LaterConcepts({ ageRange, onAgeRangeChange, biddingRadiu
           {/* X-axis baseline */}
           <div style={{ borderTop: '1px solid #e0e0e0', marginBottom: 4 }} />
 
-          {/* X-axis labels at key year marks */}
-          <div style={{ position: 'relative', height: 16, marginBottom: 8 }}>
-            {BARS.map((bar, i) => {
-              if (!TICKS.includes(bar.year)) return null
-              const pct = (i / (BARS.length - 1)) * 100
-              const isFirst = i === 0
-              const isLast = i === BARS.length - 1
+          {/* X-axis labels — positioned to match bar locations */}
+          <div style={{ position: 'relative', height: 16, marginBottom: 6 }}>
+            {X_TICKS.map(({ label, barIdx }) => {
+              const pct = ((barIdx + 0.5) / NUM_BARS) * 100
+              const isFirst = barIdx === 0
+              const isLast = barIdx === NUM_BARS - 1
               return (
-                <span key={bar.year} style={{
+                <span key={label} style={{
                   position: 'absolute',
                   left: isLast ? 'auto' : isFirst ? 0 : `${pct}%`,
                   right: isLast ? 0 : 'auto',
                   transform: (!isFirst && !isLast) ? 'translateX(-50%)' : 'none',
-                  fontSize: 12,
-                  color: '#5E6976',
+                  fontSize: 12, color: '#5E6976',
                 }}>
-                  {`Yr ${bar.year}`}
+                  {label}
                 </span>
               )
             })}
-            <span style={{ position: 'absolute', right: 0, fontSize: 12, color: '#5E6976' }}>
-              Yr 16+
-            </span>
           </div>
 
-          {/* Age slider */}
-          <SnappingAgeSlider value={ageRange} onChange={onAgeRangeChange} />
+          {/* Age slider — stop positions aligned to bar chart x-axis */}
+          <SnappingAgeSlider
+            value={ageRange}
+            onChange={onAgeRangeChange}
+            noHeader
+            stopPcts={SLIDER_STOP_PCTS}
+          />
         </div>
       </SectionCard>
 

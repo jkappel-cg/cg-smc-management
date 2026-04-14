@@ -196,8 +196,7 @@ export default function ConditionSliders() {
           <div style={{
             fontSize: 14, fontWeight: 600, color: '#0D1722',
             paddingTop: 4, paddingBottom: 6,
-            borderTop: si > 0 ? '1px solid #e0e0e0' : 'none',
-            marginTop: si > 0 ? 20 : 0,
+            marginTop: si > 0 ? 36 : 0,
           }}>
             {section.header}
           </div>

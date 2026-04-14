@@ -1,52 +1,84 @@
 import { useState } from 'react'
 
 const VEHICLE_TYPES = ['SUV', 'Sedan', 'Truck', 'Coupe', 'Minivan', 'Van', 'Wagon', 'Convertible']
+const CAR_MAKES = [
+  'Acura','Audi','BMW','Buick','Cadillac','Chevrolet','Chrysler','Dodge',
+  'Ford','Genesis','GMC','Honda','Hyundai','Infiniti','Jeep','Kia',
+  'Land Rover','Lexus','Lincoln','Mazda','Mercedes-Benz','Nissan',
+  'Ram','Subaru','Tesla','Toyota','Volkswagen','Volvo',
+]
 const CURRENT_YEAR = new Date().getFullYear()
+
+const CONDITION_OPTIONS = [
+  { value: 'all',         label: 'All vehicles' },
+  { value: 'mileage',     label: 'Mileage' },
+  { value: 'vehicleType', label: 'Vehicle type' },
+  { value: 'make',        label: 'Make / Model' },
+  { value: 'modelYear',   label: 'Model year' },
+]
+
+const defaultCondition = () => ({
+  type: 'all',
+  mileageOperator: 'over',
+  mileageValue: '',
+  vehicleType: 'SUV',
+  make: 'Ford',
+  model: '',
+  modelYearOperator: 'before',
+  modelYearValue: '',
+})
 
 const defaultForm = () => ({
   action: null,
   reducePercent: 10,
-  condition: 'all',
-  mileageOperator: 'over',
-  mileageValue: '',
-  vehicleType: 'SUV',
-  modelYearOperator: 'before',
-  modelYearValue: '',
+  increasePercent: 5,
+  conditions: [defaultCondition()],
   notes: '',
   enabled: true,
 })
 
-function getImpact(action, condition) {
+function getConditionText(cond) {
+  if (cond.type === 'all') return 'all vehicles'
+  if (cond.type === 'mileage') {
+    const val = cond.mileageValue ? Number(cond.mileageValue).toLocaleString() : '___'
+    return `vehicles ${cond.mileageOperator} ${val} miles`
+  }
+  if (cond.type === 'vehicleType') return `${cond.vehicleType}s`
+  if (cond.type === 'make') {
+    if (cond.model) return `${cond.make} ${cond.model}s`
+    return `${cond.make} vehicles`
+  }
+  if (cond.type === 'modelYear') return `vehicles ${cond.modelYearOperator} ${cond.modelYearValue || '____'}`
+  return 'vehicles'
+}
+
+function getSummary({ action, reducePercent, increasePercent, conditions }) {
   if (!action) return null
-  if (action === 'exclude' && condition === 'all') return 'High impact'
-  if (action === 'exclude' && condition === 'vehicleType') return 'High impact'
+  const subject = conditions.length === 1
+    ? getConditionText(conditions[0])
+    : conditions.map(getConditionText).join(' and ')
+  if (action === 'exclude')  return `Do not make offers on ${subject}`
+  if (action === 'reduce')   return `Reduce offers by ${reducePercent}% on ${subject}`
+  if (action === 'increase') return `Increase offers by ${increasePercent}% on ${subject}`
+}
+
+function getImpact(action, conditions) {
+  if (!action) return null
+  const hasAll    = conditions.some(c => c.type === 'all')
+  const hasBroad  = conditions.some(c => c.type === 'vehicleType' || c.type === 'make')
+  if (action === 'exclude' && (hasAll || hasBroad)) return 'High impact'
   if (action === 'exclude') return 'Medium impact'
-  if (action === 'reduce' && condition === 'all') return 'Medium impact'
+  if ((action === 'reduce' || action === 'increase') && hasAll) return 'Medium impact'
   return null
 }
 
-function getSummary({ action, reducePercent, condition, mileageOperator, mileageValue, vehicleType, modelYearOperator, modelYearValue }) {
-  if (!action) return null
-  let subject
-  if (condition === 'all') {
-    subject = 'all vehicles'
-  } else if (condition === 'mileage') {
-    const val = mileageValue ? Number(mileageValue).toLocaleString() : '___'
-    subject = `vehicles ${mileageOperator} ${val} miles`
-  } else if (condition === 'vehicleType') {
-    subject = `${vehicleType}s`
-  } else if (condition === 'modelYear') {
-    subject = `vehicles ${modelYearOperator} ${modelYearValue || '____'}`
-  }
-  if (action === 'exclude') return `Do not make offers on ${subject}`
-  if (action === 'reduce') return `Reduce offers by ${reducePercent}% on ${subject}`
-}
-
-function isValid({ action, condition, mileageValue, modelYearValue }) {
+function isValid({ action, conditions }) {
   if (!action) return false
-  if (condition === 'mileage' && !mileageValue) return false
-  if (condition === 'modelYear' && !modelYearValue) return false
-  return true
+  return conditions.every(c => {
+    if (c.type === 'mileage'   && !c.mileageValue)   return false
+    if (c.type === 'modelYear' && !c.modelYearValue) return false
+    return true
+  })
 }
 
 // ── Sub-components ──────────────────────────────────────────────────────────
@@ -162,11 +194,114 @@ const ReduceIcon = () => (
   </svg>
 )
 
+const IncreaseIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
+    <path d="M2 12L6 6L9 9L14 4" stroke="#5E6976" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M11 4H14V7" stroke="#5E6976" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+)
+
 const SectionLabel = ({ children }) => (
   <div style={{ fontSize: 12, fontWeight: 600, color: '#5E6976', letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: 10 }}>
     {children}
   </div>
 )
+
+// ── Condition row ────────────────────────────────────────────────────────────
+
+function ConditionRow({ cond, idx, total, onChange, onRemove, inputStyle }) {
+  return (
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+        <ChipGroup
+          value={cond.type}
+          onChange={v => onChange(idx, 'type', v)}
+          options={CONDITION_OPTIONS}
+        />
+        {total > 1 && (
+          <button onClick={() => onRemove(idx)} title="Remove condition" style={{
+            background: 'none', border: 'none', cursor: 'pointer',
+            color: '#5E6976', padding: '4px 6px', display: 'flex', alignItems: 'center',
+            fontSize: 16, lineHeight: 1,
+          }}>×</button>
+        )}
+      </div>
+
+      {cond.type === 'mileage' && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10 }}>
+          <InlineSelect
+            value={cond.mileageOperator}
+            onChange={v => onChange(idx, 'mileageOperator', v)}
+            options={[{ value: 'over', label: 'Over' }, { value: 'under', label: 'Under' }]}
+            width={100}
+          />
+          <input
+            type="number"
+            value={cond.mileageValue}
+            onChange={e => onChange(idx, 'mileageValue', e.target.value)}
+            placeholder="e.g. 80000"
+            style={{ ...inputStyle, width: 120 }}
+            onFocus={e => e.target.style.borderColor = '#0763D3'}
+            onBlur={e => e.target.style.borderColor = '#cccccc'}
+          />
+          <span style={{ fontSize: 14, color: '#5E6976' }}>miles</span>
+        </div>
+      )}
+
+      {cond.type === 'vehicleType' && (
+        <div style={{ marginTop: 10 }}>
+          <InlineSelect
+            value={cond.vehicleType}
+            onChange={v => onChange(idx, 'vehicleType', v)}
+            options={VEHICLE_TYPES.map(t => ({ value: t, label: t }))}
+            width={160}
+          />
+        </div>
+      )}
+
+      {cond.type === 'make' && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10 }}>
+          <InlineSelect
+            value={cond.make}
+            onChange={v => onChange(idx, 'make', v)}
+            options={CAR_MAKES.map(m => ({ value: m, label: m }))}
+            width={160}
+          />
+          <input
+            type="text"
+            value={cond.model}
+            onChange={e => onChange(idx, 'model', e.target.value)}
+            placeholder="Model (optional)"
+            style={{ ...inputStyle, width: 140 }}
+            onFocus={e => e.target.style.borderColor = '#0763D3'}
+            onBlur={e => e.target.style.borderColor = '#cccccc'}
+          />
+        </div>
+      )}
+
+      {cond.type === 'modelYear' && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10 }}>
+          <InlineSelect
+            value={cond.modelYearOperator}
+            onChange={v => onChange(idx, 'modelYearOperator', v)}
+            options={[{ value: 'before', label: 'Before' }, { value: 'after', label: 'After' }]}
+            width={100}
+          />
+          <input
+            type="number"
+            value={cond.modelYearValue}
+            onChange={e => onChange(idx, 'modelYearValue', e.target.value)}
+            placeholder={String(CURRENT_YEAR - 5)}
+            min="1990" max={CURRENT_YEAR}
+            style={{ ...inputStyle, width: 90 }}
+            onFocus={e => e.target.style.borderColor = '#0763D3'}
+            onBlur={e => e.target.style.borderColor = '#cccccc'}
+          />
+        </div>
+      )}
+    </div>
+  )
+}
 
 // ── Main component ───────────────────────────────────────────────────────────
 
@@ -175,9 +310,9 @@ export default function CustomRules() {
   const [editingId, setEditingId] = useState(null) // null=list, 'new'=create, id=edit
   const [form, setForm] = useState(defaultForm())
 
-  function openNew() { setForm(defaultForm()); setEditingId('new') }
-  function openEdit(rule) { setForm({ ...rule }); setEditingId(rule.id) }
-  function closeForm() { setEditingId(null); setForm(defaultForm()) }
+  function openNew()       { setForm(defaultForm()); setEditingId('new') }
+  function openEdit(rule)  { setForm({ ...rule }); setEditingId(rule.id) }
+  function closeForm()     { setEditingId(null); setForm(defaultForm()) }
 
   function saveRule() {
     if (!isValid(form)) return
@@ -189,13 +324,29 @@ export default function CustomRules() {
     closeForm()
   }
 
-  function deleteRule(id) { setRules(r => r.filter(rule => rule.id !== id)) }
-  function toggleRule(id) { setRules(r => r.map(rule => rule.id === id ? { ...rule, enabled: !rule.enabled } : rule)) }
+  function deleteRule(id)  { setRules(r => r.filter(rule => rule.id !== id)) }
+  function toggleRule(id)  { setRules(r => r.map(rule => rule.id === id ? { ...rule, enabled: !rule.enabled } : rule)) }
 
   const set = (key, val) => setForm(f => ({ ...f, [key]: val }))
 
+  function setCondition(idx, key, val) {
+    setForm(f => {
+      const conds = [...f.conditions]
+      conds[idx] = { ...conds[idx], [key]: val }
+      return { ...f, conditions: conds }
+    })
+  }
+
+  function addCondition() {
+    setForm(f => ({ ...f, conditions: [...f.conditions, defaultCondition()] }))
+  }
+
+  function removeCondition(idx) {
+    setForm(f => ({ ...f, conditions: f.conditions.filter((_, i) => i !== idx) }))
+  }
+
   const summary = getSummary(form)
-  const impact = getImpact(form.action, form.condition)
+  const impact  = getImpact(form.action, form.conditions)
   const canSave = isValid(form)
 
   const inputStyle = {
@@ -203,6 +354,10 @@ export default function CustomRules() {
     border: '1px solid #cccccc', borderRadius: 4,
     outline: 'none', color: '#0D1722',
   }
+
+  const actionIcon = form.action === 'exclude' ? <ExcludeIcon />
+    : form.action === 'reduce'  ? <ReduceIcon />
+    : <IncreaseIcon />
 
   return (
     <div style={{ background: '#fff', border: '1px solid #e0e0e0', borderRadius: 8, marginBottom: 16, overflow: 'hidden' }}>
@@ -255,7 +410,7 @@ export default function CustomRules() {
               }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 14, color: '#0D1722', marginBottom: 5 }}>{getSummary(rule)}</div>
-                  <ImpactTag level={getImpact(rule.action, rule.condition)} />
+                  <ImpactTag level={getImpact(rule.action, rule.conditions)} />
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0, marginLeft: 16 }}>
                   <Toggle value={rule.enabled} onChange={() => toggleRule(rule.id)} />
@@ -302,88 +457,64 @@ export default function CustomRules() {
                 selected={form.action === 'reduce'}
                 onClick={() => set('action', 'reduce')}
               />
+              <ActionCard
+                icon={<IncreaseIcon />}
+                label="Increase offers"
+                description="Raise offer amounts by a percentage"
+                selected={form.action === 'increase'}
+                onClick={() => set('action', 'increase')}
+              />
             </div>
           </div>
 
-          {/* Reduce % */}
-          {form.action === 'reduce' && (
+          {/* Amount (reduce or increase) */}
+          {(form.action === 'reduce' || form.action === 'increase') && (
             <div style={{ marginBottom: 20 }}>
               <SectionLabel>By how much?</SectionLabel>
               <ChipGroup
-                value={form.reducePercent}
-                onChange={v => set('reducePercent', v)}
+                value={form.action === 'reduce' ? form.reducePercent : form.increasePercent}
+                onChange={v => set(form.action === 'reduce' ? 'reducePercent' : 'increasePercent', v)}
                 options={[{ value: 5, label: '5%' }, { value: 10, label: '10%' }, { value: 15, label: '15%' }]}
               />
             </div>
           )}
 
-          {/* Condition */}
+          {/* Conditions */}
           {form.action && (
             <div style={{ marginBottom: 20 }}>
               <SectionLabel>Which vehicles does this apply to?</SectionLabel>
-              <ChipGroup
-                value={form.condition}
-                onChange={v => set('condition', v)}
-                options={[
-                  { value: 'all', label: 'All vehicles' },
-                  { value: 'mileage', label: 'Mileage' },
-                  { value: 'vehicleType', label: 'Vehicle type' },
-                  { value: 'modelYear', label: 'Model year' },
-                ]}
-              />
 
-              {/* Condition inputs */}
-              {form.condition === 'mileage' && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12 }}>
-                  <InlineSelect
-                    value={form.mileageOperator}
-                    onChange={v => set('mileageOperator', v)}
-                    options={[{ value: 'over', label: 'Over' }, { value: 'under', label: 'Under' }]}
-                    width={100}
+              {form.conditions.map((cond, idx) => (
+                <div key={idx}>
+                  <ConditionRow
+                    cond={cond}
+                    idx={idx}
+                    total={form.conditions.length}
+                    onChange={setCondition}
+                    onRemove={removeCondition}
+                    inputStyle={inputStyle}
                   />
-                  <input
-                    type="number"
-                    value={form.mileageValue}
-                    onChange={e => set('mileageValue', e.target.value)}
-                    placeholder="e.g. 80000"
-                    style={{ ...inputStyle, width: 120 }}
-                    onFocus={e => e.target.style.borderColor = '#0763D3'}
-                    onBlur={e => e.target.style.borderColor = '#cccccc'}
-                  />
-                  <span style={{ fontSize: 14, color: '#5E6976' }}>miles</span>
+                  {idx < form.conditions.length - 1 && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '12px 0' }}>
+                      <div style={{ flex: 1, height: 1, background: '#e0e0e0' }} />
+                      <span style={{ fontSize: 12, color: '#5E6976' }}>and</span>
+                      <div style={{ flex: 1, height: 1, background: '#e0e0e0' }} />
+                    </div>
+                  )}
                 </div>
-              )}
+              ))}
 
-              {form.condition === 'vehicleType' && (
-                <div style={{ marginTop: 12 }}>
-                  <InlineSelect
-                    value={form.vehicleType}
-                    onChange={v => set('vehicleType', v)}
-                    options={VEHICLE_TYPES.map(t => ({ value: t, label: t }))}
-                    width={160}
-                  />
-                </div>
-              )}
-
-              {form.condition === 'modelYear' && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12 }}>
-                  <InlineSelect
-                    value={form.modelYearOperator}
-                    onChange={v => set('modelYearOperator', v)}
-                    options={[{ value: 'before', label: 'Before' }, { value: 'after', label: 'After' }]}
-                    width={100}
-                  />
-                  <input
-                    type="number"
-                    value={form.modelYearValue}
-                    onChange={e => set('modelYearValue', e.target.value)}
-                    placeholder={String(CURRENT_YEAR - 5)}
-                    min="1990" max={CURRENT_YEAR}
-                    style={{ ...inputStyle, width: 90 }}
-                    onFocus={e => e.target.style.borderColor = '#0763D3'}
-                    onBlur={e => e.target.style.borderColor = '#cccccc'}
-                  />
-                </div>
+              {form.conditions.length < 2 && (
+                <button onClick={addCondition} style={{
+                  marginTop: 12, fontSize: 13, color: '#0763D3',
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  padding: 0, display: 'flex', alignItems: 'center', gap: 4,
+                }}>
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    <path d="M6 1V11M1 6H11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                  </svg>
+                  Add condition
+                </button>
               )}
             </div>
           )}
@@ -397,7 +528,7 @@ export default function CustomRules() {
               marginBottom: 20,
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                {form.action === 'exclude' ? <ExcludeIcon /> : <ReduceIcon />}
+                {actionIcon}
                 <span style={{ fontSize: 14, color: '#0D1722' }}>{summary}</span>
               </div>
               {impact && <ImpactTag level={impact} />}
@@ -423,7 +554,7 @@ export default function CustomRules() {
             />
           </div>
 
-          {/* Actions */}
+          {/* Save / Cancel */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <button onClick={saveRule} disabled={!canSave} style={{
               padding: '8px 18px', fontSize: 14, fontWeight: 500,

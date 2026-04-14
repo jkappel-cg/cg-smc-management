@@ -286,6 +286,7 @@ export default function CustomRules() {
 
           {/* Action selection */}
           <div style={{ marginBottom: 20 }}>
+            <SectionLabel>What do you want to do?</SectionLabel>
             <div style={{ display: 'flex', gap: 10 }}>
               <ActionCard
                 icon={<ExcludeIcon />}
@@ -307,6 +308,7 @@ export default function CustomRules() {
           {/* Reduce % */}
           {form.action === 'reduce' && (
             <div style={{ marginBottom: 20 }}>
+              <SectionLabel>By how much?</SectionLabel>
               <ChipGroup
                 value={form.reducePercent}
                 onChange={v => set('reducePercent', v)}
@@ -318,6 +320,7 @@ export default function CustomRules() {
           {/* Condition */}
           {form.action && (
             <div style={{ marginBottom: 20 }}>
+              <SectionLabel>Which vehicles does this apply to?</SectionLabel>
               <ChipGroup
                 value={form.condition}
                 onChange={v => set('condition', v)}

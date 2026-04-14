@@ -30,7 +30,7 @@ const BOOK_VALUE_OPTIONS = [
   },
   {
     value: 'blackbook',
-    label: 'Blackbook',
+    label: 'Black Book',
     description: 'Wholesale & auction pricing',
     recommended: false,
     tooltip: 'Specializes in wholesale and auction pricing for highly accurate market condition assessments.',
@@ -96,7 +96,9 @@ export default function SMCStrategy() {
   const [makesMode, setMakesMode] = useState('include')
   // Next phase slider state
   const [maxOfferSlider, setMaxOfferSlider] = useState(80000)
+  const [maxOfferRaw, setMaxOfferRaw] = useState(null)
   const [maxMileageSlider, setMaxMileageSlider] = useState(200000)
+  const [maxMileageRaw, setMaxMileageRaw] = useState(null)
   const [ageRange, setAgeRange] = useState([0, 2])
   // Later phase state
   const [biddingRadius, setBiddingRadius] = useState(175)
@@ -142,11 +144,11 @@ export default function SMCStrategy() {
         {/* Scrollable content */}
         <div style={{
           flex: 1,
-          padding: '24px 24px 80px',
+          padding: '24px 24px 0',
           display: 'flex',
           justifyContent: 'center',
         }}>
-        <div style={{ width: '100%', maxWidth: 1164 }}>
+        <div style={{ width: '100%', maxWidth: 1164, paddingBottom: 80 }}>
 
           {phase === 'Later' ? (
             /* Later: only show LaterConcepts */
@@ -168,13 +170,8 @@ export default function SMCStrategy() {
                     <h1 style={{ fontSize: 20, fontWeight: 700, color: '#0D1722', marginBottom: 4, fontFamily: "'RundDisplay', sans-serif" }}>
                       Sell My Car Strategy
                     </h1>
-                    <p style={{ fontSize: 14, color: '#0D1722', marginBottom: 4 }}>
-                      {phase === 'Next'
-                        ? 'Adjust your global and custom bidding rules to refine your strategy'
-                        : 'Adjust your global bidding rules to refine your strategy'}
-                    </p>
                     <p style={{ fontSize: 14, color: '#0D1722' }}>
-                      Setup a meeting with your product specialist to customize your bidding strategy further.
+                      Adjust your global and custom bidding rules to refine your strategy. Setup a meeting with your product specialist to customize your bidding strategy further.
                     </p>
                   </div>
                   <button style={{
@@ -215,11 +212,18 @@ export default function SMCStrategy() {
                     <div style={{ width: '55%' }}>
                       <GuardrailSlider
                         value={maxOfferSlider}
-                        onChange={setMaxOfferSlider}
+                        onChange={v => { setMaxOfferSlider(v); setMaxOfferRaw(null) }}
                         min={20000} max={200000} step={1000}
                         recLo={60000} recHi={200000}
                         formatValue={v => `$${v / 1000}k`}
                         formatLabel={v => `$${v / 1000}k`}
+                        rawInput={maxOfferRaw}
+                        onRawInput={setMaxOfferRaw}
+                        onRawBlur={raw => {
+                          const num = parseFloat(raw.replace(/[^0-9.]/g, '')) * (raw.includes('k') || raw.includes('K') ? 1000 : 1)
+                          if (!isNaN(num)) setMaxOfferSlider(Math.max(20000, Math.min(200000, Math.round(num / 1000) * 1000)))
+                          setMaxOfferRaw(null)
+                        }}
                       />
                     </div>
                   } />
@@ -242,11 +246,18 @@ export default function SMCStrategy() {
                     <div style={{ width: '55%' }}>
                       <GuardrailSlider
                         value={maxMileageSlider}
-                        onChange={setMaxMileageSlider}
+                        onChange={v => { setMaxMileageSlider(v); setMaxMileageRaw(null) }}
                         min={50000} max={300000} step={5000}
                         recLo={50000} recHi={200000}
                         formatValue={v => `${v / 1000}k mi`}
                         formatLabel={v => `${v / 1000}k`}
+                        rawInput={maxMileageRaw}
+                        onRawInput={setMaxMileageRaw}
+                        onRawBlur={raw => {
+                          const num = parseFloat(raw.replace(/[^0-9.]/g, '')) * (raw.toLowerCase().includes('k') ? 1000 : 1)
+                          if (!isNaN(num)) setMaxMileageSlider(Math.max(50000, Math.min(300000, Math.round(num / 5000) * 5000)))
+                          setMaxMileageRaw(null)
+                        }}
                       />
                     </div>
                   } />
@@ -306,6 +317,21 @@ export default function SMCStrategy() {
           <SaveBar onSave={handleSave} />
 
         </div>
+
+        {/* Global footer — visible when scrolled past the page footer */}
+        <div style={{
+          width: '100%',
+          padding: '14px 0',
+          background: '#F0F2F4',
+          borderTop: '1px solid #e0e0e0',
+          textAlign: 'center',
+          fontSize: 11,
+          color: '#9AA3AD',
+          letterSpacing: '0.04em',
+        }}>
+          DEP global footer placeholder
+        </div>
+
         </div>
       </div>
     </div>

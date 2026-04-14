@@ -18,7 +18,7 @@ export default function SnappingAgeSlider({ value, onChange }) {
   const loPct = (lo / (STOPS.length - 1)) * 100
   const hiPct = (hi / (STOPS.length - 1)) * 100
   const trackColor = inRange ? GREEN_TRACK : AMBER_TRACK
-  const thumbColor = inRange ? GREEN : AMBER
+  const thumbColor = '#79828D'
   const badgeText = inRange ? 'Recommended' : 'Outside recommended range'
   const badgeBg = inRange ? '#DCF7DD' : '#FFF1C0'
   const displayText = lo === hi ? STOPS[lo] : `${STOPS[lo]} – ${STOPS[hi]}`

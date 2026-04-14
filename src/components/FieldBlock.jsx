@@ -1,4 +1,4 @@
-const Sep = () => <div style={{ height: 1, background: '#f0f0f0', width: '50%' }} />
+const Sep = () => <div style={{ height: 1, background: '#f0f0f0', width: '100%' }} />
 
 export default function FieldBlock({ label, description, children, last = false, inline = false, inlineControl = null }) {
 

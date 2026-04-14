@@ -395,10 +395,7 @@ export default function CustomRules() {
         <div style={{ padding: rules.length === 0 ? '40px 24px' : '0 24px' }}>
           {rules.length === 0 ? (
             <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 14, color: '#5E6976', marginBottom: 10 }}>No custom rules yet</div>
-              <button onClick={openNew} style={{ fontSize: 13, fontWeight: 500, color: '#0763D3', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
-                + Create your first rule
-              </button>
+              <div style={{ fontSize: 14, color: '#5E6976' }}>No custom rules yet</div>
             </div>
           ) : (
             rules.map((rule, i) => (

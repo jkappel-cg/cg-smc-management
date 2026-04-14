@@ -90,6 +90,22 @@ export default function GuardrailSlider({
         />
       </div>
 
+      {/* Recommended center tick */}
+      {recLo != null && recHi != null && (() => {
+        const midPct = (((recLo + recHi) / 2 - min) / (max - min)) * 100
+        return (
+          <div style={{ position: 'relative', height: 8 }}>
+            <div style={{
+              position: 'absolute',
+              left: `${midPct}%`,
+              transform: 'translateX(-50%)',
+              width: 1, height: 8,
+              background: '#C8CDD2',
+            }} />
+          </div>
+        )
+      })()}
+
       {/* Anchor labels */}
       <div style={{ position: 'relative', height: 18, marginTop: 2 }}>
         <span style={{ position: 'absolute', left: 0, fontSize: 12, color: '#5E6976' }}>{fmt(min)}</span>

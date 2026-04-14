@@ -163,7 +163,7 @@ export default function ConditionSliders() {
   function commitInput(item, raw) {
     const unit = units[item.key]
     const cfg  = getConfig(item, unit)
-    const parsed = parseFloat(String(raw).replace(/,/g, ''))
+    const parsed = parseFloat(String(raw).replace(/[$,%]/g, '').replace(/,/g, ''))
     if (!isNaN(parsed) && parsed >= 0) {
       set(item.key, Math.min(cfg.max, Math.max(cfg.min, parsed)))
     }
@@ -253,7 +253,7 @@ export default function ConditionSliders() {
               const badgeText = val === 0 ? 'No adjustment' : inRange ? 'Recommended' : val < cfg.recLo ? 'Below recommended' : 'Above recommended'
               const badgeBg   = val === 0 ? '#F0F2F4' : inRange ? '#DCF7DD' : '#FFF1C0'
               const badgeColor = val === 0 ? '#5E6976' : '#0D1722'
-              const inputDisplay = item.key in rawInputs ? rawInputs[item.key] : String(val)
+              const inputDisplay = item.key in rawInputs ? rawInputs[item.key] : (unit === '$' ? `$${val}` : `${val}%`)
 
               return (
                 <div key={item.key} style={{ padding: '12px 0' }}>
@@ -267,7 +267,7 @@ export default function ConditionSliders() {
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                           <UnitToggle unit={unit} onChange={u => handleStaticExpand(item, u)} />
                           <input
-                            type="number"
+                            type="text"
                             value={inputDisplay}
                             onChange={e => handleInputChange(item.key, e.target.value)}
                             onBlur={e => handleInputBlur(item, e.target.value)}

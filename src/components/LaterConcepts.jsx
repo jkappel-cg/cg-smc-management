@@ -36,14 +36,6 @@ const CHART_HEIGHT = 100
 // "No limit"→ right edge of bar index 15 → 16/16 = 100%
 const SLIDER_STOP_PCTS = [2, 5, 10, 15, 16].map(yr => (yr / NUM_BARS) * 100)
 
-// X-axis tick labels and their bar positions
-const X_TICKS = [
-  { label: 'Yr 1',  barIdx: 0  },
-  { label: 'Yr 5',  barIdx: 4  },
-  { label: 'Yr 10', barIdx: 9  },
-  { label: 'Yr 15', barIdx: 14 },
-  { label: 'Yr 16+',barIdx: 15 },
-]
 
 const REC_HI_IDX = 2  // "10 yrs"
 const GREEN = '#078A0B'
@@ -125,27 +117,7 @@ export default function LaterConcepts({ ageRange, onAgeRangeChange, biddingRadiu
           </div>
 
           {/* X-axis baseline */}
-          <div style={{ borderTop: '1px solid #e0e0e0', marginBottom: 4 }} />
-
-          {/* X-axis labels — positioned to match bar locations */}
-          <div style={{ position: 'relative', height: 16, marginBottom: 6 }}>
-            {X_TICKS.map(({ label, barIdx }) => {
-              const pct = ((barIdx + 0.5) / NUM_BARS) * 100
-              const isFirst = barIdx === 0
-              const isLast = barIdx === NUM_BARS - 1
-              return (
-                <span key={label} style={{
-                  position: 'absolute',
-                  left: isLast ? 'auto' : isFirst ? 0 : `${pct}%`,
-                  right: isLast ? 0 : 'auto',
-                  transform: (!isFirst && !isLast) ? 'translateX(-50%)' : 'none',
-                  fontSize: 12, color: '#5E6976',
-                }}>
-                  {label}
-                </span>
-              )
-            })}
-          </div>
+          <div style={{ borderTop: '1px solid #e0e0e0', marginBottom: 12 }} />
 
           {/* Age slider — stop positions aligned to bar chart x-axis */}
           <SnappingAgeSlider

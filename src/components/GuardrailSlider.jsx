@@ -12,8 +12,7 @@ export default function GuardrailSlider({
   const inRange = value >= lo && value <= recHi
   const GREEN = '#078A0B'
   const GREEN_TRACK = '#09AD0E'
-  const AMBER = '#BA7517'
-  const thumbColor = inRange ? GREEN : AMBER
+  const thumbColor = '#79828D'
 
   let badgeText, badgeBg
   if (inRange)         { badgeText = isTwoSided ? 'Recommended' : 'Within range'; badgeBg = '#DCF7DD' }

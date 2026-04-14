@@ -144,11 +144,11 @@ export default function SMCStrategy() {
         {/* Scrollable content */}
         <div style={{
           flex: 1,
-          padding: '24px 24px 80px',
+          padding: '24px 24px 0',
           display: 'flex',
           justifyContent: 'center',
         }}>
-        <div style={{ width: '100%', maxWidth: 1164 }}>
+        <div style={{ width: '100%', maxWidth: 1164, paddingBottom: 80 }}>
 
           {phase === 'Later' ? (
             /* Later: only show LaterConcepts */
@@ -317,6 +317,21 @@ export default function SMCStrategy() {
           <SaveBar onSave={handleSave} />
 
         </div>
+
+        {/* Global footer — visible when scrolled past the page footer */}
+        <div style={{
+          width: '100%',
+          padding: '14px 0',
+          background: '#F0F2F4',
+          borderTop: '1px solid #e0e0e0',
+          textAlign: 'center',
+          fontSize: 11,
+          color: '#9AA3AD',
+          letterSpacing: '0.04em',
+        }}>
+          DEP global footer placeholder
+        </div>
+
         </div>
       </div>
     </div>

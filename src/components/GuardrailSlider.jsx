@@ -90,18 +90,34 @@ export default function GuardrailSlider({
         />
       </div>
 
+      {/* Recommended center tick */}
+      {recLo != null && recHi != null && (() => {
+        const midPct = (((recLo + recHi) / 2 - min) / (max - min)) * 100
+        return (
+          <div style={{ position: 'relative', height: 8 }}>
+            <div style={{
+              position: 'absolute',
+              left: `${midPct}%`,
+              transform: 'translateX(-50%)',
+              width: 1, height: 8,
+              background: '#C8CDD2',
+            }} />
+          </div>
+        )
+      })()}
+
       {/* Anchor labels */}
       <div style={{ position: 'relative', height: 18, marginTop: 2 }}>
         <span style={{ position: 'absolute', left: 0, fontSize: 12, color: '#5E6976' }}>{fmt(min)}</span>
         {isTwoSided && (
-          <span style={{ position: 'absolute', left: `${loPct}%`, transform: 'translateX(-50%)', fontSize: 12, color: GREEN, fontWeight: 400 }}>
+          <span style={{ position: 'absolute', left: `${loPct}%`, transform: 'translateX(-50%)', fontSize: 12, color: '#5E6976', fontWeight: 400 }}>
             {fmt(lo)}
           </span>
         )}
-        <span style={{ position: 'absolute', left: `${hiPct}%`, transform: 'translateX(-50%)', fontSize: 12, color: GREEN, fontWeight: 400 }}>
+        <span style={{ position: 'absolute', left: `${hiPct}%`, transform: 'translateX(-50%)', fontSize: 12, color: '#5E6976', fontWeight: 400 }}>
           {fmt(recHi)}
         </span>
-        <span style={{ position: 'absolute', right: 0, fontSize: 12, color: '#5E6976' }}>{fmt(max)}</span>
+        {recHi !== max && <span style={{ position: 'absolute', right: 0, fontSize: 12, color: '#5E6976' }}>{fmt(max)}</span>}
       </div>
     </div>
   )

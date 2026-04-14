@@ -1,35 +1,74 @@
 import { useRef } from 'react'
 
-const STOPS = ['2 yrs', '5 yrs', '10 yrs', '15 yrs', 'No limit']
+const AGE_YEARS  = [2, 5, 10, 15, null]          // years old per stop (null = no limit)
+const AGE_LABELS = ['2 yrs', '5 yrs', '10 yrs', '15 yrs', 'No limit']
 // Default evenly-spaced percentages (used when no stopPcts prop given)
-const DEFAULT_STOP_PCTS = STOPS.map((_, i) => (i / (STOPS.length - 1)) * 100)
+const DEFAULT_STOP_PCTS = AGE_LABELS.map((_, i) => (i / (AGE_LABELS.length - 1)) * 100)
 const REC_HI_IDX = 2  // "10 yrs" is the recommended upper bound
 const GREEN = '#078A0B'
 const GREEN_TRACK = '#09AD0E'
-const AMBER = '#BA7517'
 const AMBER_TRACK = '#F5A623'
 
-// value    = [loIdx, hiIdx]
-// onChange = fn([loIdx, hiIdx])
-// noHeader = bool — suppress the badge/range row (caller renders it)
-// stopPcts = number[] — custom % positions for each stop (length must equal STOPS.length)
-export default function SnappingAgeSlider({ value, onChange, noHeader = false, stopPcts = DEFAULT_STOP_PCTS }) {
+// value         = [loIdx, hiIdx]
+// onChange       = fn([loIdx, hiIdx])
+// noHeader       = bool — suppress the header row (caller renders it)
+// stopPcts       = number[] — custom % positions for each stop
+// showModelYears = bool — show model year labels + primary year-range header
+export default function SnappingAgeSlider({
+  value,
+  onChange,
+  noHeader = false,
+  stopPcts = DEFAULT_STOP_PCTS,
+  showModelYears = false,
+}) {
   const [lo, hi] = value
-  const trackRef = useRef()
-  const dragging = useRef(null)
+  const trackRef  = useRef()
+  const dragging  = useRef(null)
 
-  const inRange = hi <= REC_HI_IDX
-  const loPct = stopPcts[lo]
-  const hiPct = stopPcts[hi]
+  const CURRENT_YEAR = new Date().getFullYear()
+
+  // Model year per stop: currentYear - ageYears (null → no limit)
+  const MODEL_YEARS = AGE_YEARS.map(yrs => yrs === null ? null : CURRENT_YEAR - yrs)
+  // Stop labels: model-year mode vs age mode
+  const STOP_LABELS = showModelYears
+    ? MODEL_YEARS.map((yr, i) => yr === null ? 'No limit' : String(yr))
+    : AGE_LABELS
+
+  const inRange   = hi <= REC_HI_IDX
+  const loPct     = stopPcts[lo]
+  const hiPct     = stopPcts[hi]
   const trackColor = inRange ? GREEN_TRACK : AMBER_TRACK
   const thumbColor = '#79828D'
-  const badgeText = inRange ? 'Recommended' : 'Outside recommended range'
-  const badgeBg = inRange ? '#DCF7DD' : '#FFF1C0'
-  const displayText = lo === hi ? STOPS[lo] : `${STOPS[lo]} – ${STOPS[hi]}`
 
+  // ── Header text ──────────────────────────────────────────────────────────
+  // Model-year mode: primary = "Accepting: [oldest] – [newest]"
+  // Age mode: badge + age range (existing behaviour)
+  const loYear = MODEL_YEARS[lo]   // newest model year (lo = youngest age)
+  const hiYear = MODEL_YEARS[hi]   // oldest model year (hi = oldest age, null = no limit)
+
+  let primaryText
+  if (showModelYears) {
+    if (hiYear === null) {
+      primaryText = `${loYear} and older`
+    } else {
+      primaryText = `${hiYear} – ${loYear}`
+    }
+  } else {
+    primaryText = lo === hi ? AGE_LABELS[lo] : `${AGE_LABELS[lo]} – ${AGE_LABELS[hi]}`
+  }
+
+  const badgeText = inRange ? 'Recommended' : 'Outside recommended range'
+  const badgeBg   = inRange ? '#DCF7DD' : '#FFF1C0'
+
+  // Secondary age-in-years label (shown only in model-year mode, below stop labels)
+  const loAgeLabel = AGE_LABELS[lo]
+  const hiAgeLabel = AGE_LABELS[hi]
+  const ageSubtext = lo === hi ? `${loAgeLabel}` : `${loAgeLabel} – ${hiAgeLabel}`
+
+  // ── Interaction ──────────────────────────────────────────────────────────
   function getStopIdx(clientX) {
     const rect = trackRef.current.getBoundingClientRect()
-    const pct = ((clientX - rect.left) / rect.width) * 100
+    const pct  = ((clientX - rect.left) / rect.width) * 100
     let closest = 0, minDist = Infinity
     stopPcts.forEach((sp, i) => {
       const d = Math.abs(pct - sp)
@@ -55,30 +94,44 @@ export default function SnappingAgeSlider({ value, onChange, noHeader = false, s
   function handlePointerMove(e) {
     if (!dragging.current) return
     const idx = getStopIdx(e.clientX)
-    if (dragging.current === 'lo') {
-      onChange([Math.min(idx, hi), hi])
-    } else {
-      onChange([lo, Math.max(idx, lo)])
-    }
+    if (dragging.current === 'lo') onChange([Math.min(idx, hi), hi])
+    else                            onChange([lo, Math.max(idx, lo)])
   }
 
   function handlePointerUp() { dragging.current = null }
 
   return (
     <div>
-      {/* Header: badge left, range text right — hidden when noHeader=true */}
+      {/* Header — hidden when noHeader=true */}
       {!noHeader && (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-          <span style={{
-            fontSize: 12, background: badgeBg, color: '#0D1722',
-            borderRadius: 4, padding: '2px 8px', fontWeight: 400,
-          }}>
-            {badgeText}
-          </span>
-          <span style={{ fontSize: 14, fontWeight: 400, color: '#0D1722' }}>
-            {displayText}
-          </span>
-        </div>
+        showModelYears ? (
+          /* Model-year mode: label on left, year range on right */
+          <div style={{ marginBottom: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+              <span style={{ fontSize: 13, color: '#5E6976' }}>Accepting vehicles from</span>
+              <span style={{ fontSize: 15, fontWeight: 600, color: '#0D1722' }}>{primaryText}</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <span style={{
+                fontSize: 12, background: badgeBg, color: '#0D1722',
+                borderRadius: 4, padding: '2px 8px', fontWeight: 400,
+              }}>
+                {badgeText}
+              </span>
+            </div>
+          </div>
+        ) : (
+          /* Age mode: badge left, range right (original) */
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+            <span style={{
+              fontSize: 12, background: badgeBg, color: '#0D1722',
+              borderRadius: 4, padding: '2px 8px', fontWeight: 400,
+            }}>
+              {badgeText}
+            </span>
+            <span style={{ fontSize: 14, fontWeight: 400, color: '#0D1722' }}>{primaryText}</span>
+          </div>
+        )
       )}
 
       {/* Track */}
@@ -102,7 +155,7 @@ export default function SnappingAgeSlider({ value, onChange, noHeader = false, s
           height: 6, background: trackColor, borderRadius: 3,
           transform: 'translateY(-50%)', pointerEvents: 'none',
         }} />
-        {/* Dotted circle markers at each stop */}
+        {/* Dotted stop markers */}
         {stopPcts.map((pct, i) => (
           <div key={i} style={{
             position: 'absolute', top: '50%', left: `${pct}%`,
@@ -132,34 +185,31 @@ export default function SnappingAgeSlider({ value, onChange, noHeader = false, s
 
       {/* Stop labels */}
       <div style={{ position: 'relative', height: 18, marginTop: 2 }}>
-        {STOPS.map((stop, i) => {
-          const pct = stopPcts[i]
+        {STOP_LABELS.map((label, i) => {
+          const pct     = stopPcts[i]
           const isFirst = i === 0
-          const isLast = i === STOPS.length - 1
-          const inRec = i <= REC_HI_IDX
+          const isLast  = i === STOP_LABELS.length - 1
+          const isRec   = i <= REC_HI_IDX
           return (
-            <span key={stop} style={{
+            <span key={label} style={{
               position: 'absolute',
-              left: isLast ? 'auto' : isFirst ? 0 : `${pct}%`,
-              right: isLast ? 0 : 'auto',
+              left:  isLast  ? 'auto' : isFirst ? 0 : `${pct}%`,
+              right: isLast  ? 0 : 'auto',
               transform: (!isFirst && !isLast) ? 'translateX(-50%)' : 'none',
               fontSize: 12,
-              color: inRec ? GREEN : '#5E6976',
+              color: '#5E6976',
               fontWeight: 400,
             }}>
-              {stop}
+              {label}
             </span>
           )
         })}
       </div>
 
-      {hi === STOPS.length - 1 && (
-        <div style={{
-          marginTop: 10, padding: '8px 12px',
-          background: '#FFF1C0', border: '1px solid #f5c800',
-          borderRadius: 6, fontSize: 14, color: '#0D1722',
-        }}>
-          ⚠ No vehicle age limit may reduce offer accuracy for older vehicles.
+      {/* Secondary age-in-years context — only in model-year mode */}
+      {showModelYears && (
+        <div style={{ textAlign: 'center', marginTop: 6 }}>
+          <span style={{ fontSize: 11, color: '#9AA3AD' }}>({ageSubtext})</span>
         </div>
       )}
     </div>

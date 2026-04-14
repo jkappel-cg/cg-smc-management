@@ -275,7 +275,7 @@ export default function SMCStrategy() {
                 {phase !== 'MVP' ? (
                   <FieldBlock label="Max vehicle age" description="Vehicles older than this won't receive offers" inlineControl={
                     <div style={{ width: '55%' }}>
-                      <SnappingAgeSlider value={ageRange} onChange={setAgeRange} />
+                      <SnappingAgeSlider value={ageRange} onChange={setAgeRange} showModelYears />
                     </div>
                   } />
                 ) : (

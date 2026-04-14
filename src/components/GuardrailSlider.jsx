@@ -117,7 +117,7 @@ export default function GuardrailSlider({
         <span style={{ position: 'absolute', left: `${hiPct}%`, transform: 'translateX(-50%)', fontSize: 12, color: GREEN, fontWeight: 400 }}>
           {fmt(recHi)}
         </span>
-        <span style={{ position: 'absolute', right: 0, fontSize: 12, color: '#5E6976' }}>{fmt(max)}</span>
+        {recHi !== max && <span style={{ position: 'absolute', right: 0, fontSize: 12, color: '#5E6976' }}>{fmt(max)}</span>}
       </div>
     </div>
   )

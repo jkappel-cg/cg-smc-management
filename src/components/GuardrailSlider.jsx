@@ -45,9 +45,10 @@ export default function GuardrailSlider({
                 value={rawInput ?? formatValue(value)}
                 onChange={e => onRawInput(e.target.value)}
                 onBlur={e => onRawBlur && onRawBlur(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter' && onRawBlur) { onRawBlur(e.target.value); e.target.blur() } }}
                 onFocus={e => e.target.select()}
                 style={{
-                  width: 64, height: 28, padding: '2px 6px',
+                  width: 90, height: 28, padding: '2px 8px',
                   fontSize: 14, textAlign: 'right', color: '#0D1722',
                   border: '1px solid #cccccc', borderRadius: 4, outline: 'none',
                 }}

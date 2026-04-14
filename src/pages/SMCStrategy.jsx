@@ -30,7 +30,7 @@ const BOOK_VALUE_OPTIONS = [
   },
   {
     value: 'blackbook',
-    label: 'Blackbook',
+    label: 'Black Book',
     description: 'Wholesale & auction pricing',
     recommended: false,
     tooltip: 'Specializes in wholesale and auction pricing for highly accurate market condition assessments.',

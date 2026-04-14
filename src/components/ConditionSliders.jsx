@@ -160,22 +160,28 @@ export default function ConditionSliders() {
     setRawInputs(r => ({ ...r, [key]: raw }))
   }
 
-  function handleInputBlur(item, raw) {
+  function commitInput(item, raw) {
     const unit = units[item.key]
     const cfg  = getConfig(item, unit)
-    const parsed = parseFloat(raw)
+    const parsed = parseFloat(String(raw).replace(/,/g, ''))
     if (!isNaN(parsed) && parsed >= 0) {
-      set(item.key, Math.max(cfg.min, Math.min(cfg.max, parsed)))
+      set(item.key, Math.min(cfg.max, Math.max(cfg.min, parsed)))
     }
     setRawInputs(r => { const n = { ...r }; delete n[item.key]; return n })
   }
 
+  function handleInputBlur(item, raw) { commitInput(item, raw) }
+
+  function handleInputKeyDown(e, item) {
+    if (e.key === 'Enter') { commitInput(item, e.target.value); e.target.blur() }
+  }
+
   const inputStyle = {
-    width: 52, height: 28,
+    width: 90, height: 28,
     border: '1px solid #cccccc',
     borderRadius: 4,
     fontSize: 14,
-    padding: '2px 6px',
+    padding: '2px 8px',
     textAlign: 'right',
     outline: 'none',
     color: '#0D1722',
@@ -265,6 +271,7 @@ export default function ConditionSliders() {
                             value={inputDisplay}
                             onChange={e => handleInputChange(item.key, e.target.value)}
                             onBlur={e => handleInputBlur(item, e.target.value)}
+                            onKeyDown={e => handleInputKeyDown(e, item)}
                             onFocus={e => e.target.select()}
                             style={inputStyle}
                             onMouseEnter={e => { e.target.style.borderColor = '#0066cc' }}

@@ -110,11 +110,11 @@ export default function GuardrailSlider({
       <div style={{ position: 'relative', height: 18, marginTop: 2 }}>
         <span style={{ position: 'absolute', left: 0, fontSize: 12, color: '#5E6976' }}>{fmt(min)}</span>
         {isTwoSided && (
-          <span style={{ position: 'absolute', left: `${loPct}%`, transform: 'translateX(-50%)', fontSize: 12, color: GREEN, fontWeight: 400 }}>
+          <span style={{ position: 'absolute', left: `${loPct}%`, transform: 'translateX(-50%)', fontSize: 12, color: '#5E6976', fontWeight: 400 }}>
             {fmt(lo)}
           </span>
         )}
-        <span style={{ position: 'absolute', left: `${hiPct}%`, transform: 'translateX(-50%)', fontSize: 12, color: GREEN, fontWeight: 400 }}>
+        <span style={{ position: 'absolute', left: `${hiPct}%`, transform: 'translateX(-50%)', fontSize: 12, color: '#5E6976', fontWeight: 400 }}>
           {fmt(recHi)}
         </span>
         {recHi !== max && <span style={{ position: 'absolute', right: 0, fontSize: 12, color: '#5E6976' }}>{fmt(max)}</span>}

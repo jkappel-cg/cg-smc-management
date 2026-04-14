@@ -153,15 +153,6 @@ export default function SnappingAgeSlider({ value, onChange, noHeader = false, s
         })}
       </div>
 
-      {hi === STOPS.length - 1 && (
-        <div style={{
-          marginTop: 10, padding: '8px 12px',
-          background: '#FFF1C0', border: '1px solid #f5c800',
-          borderRadius: 6, fontSize: 14, color: '#0D1722',
-        }}>
-          ⚠ No vehicle age limit may reduce offer accuracy for older vehicles.
-        </div>
-      )}
     </div>
   )
 }

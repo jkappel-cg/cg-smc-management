@@ -97,7 +97,7 @@ export default function SMCStrategy() {
   // Next phase slider state
   const [maxOfferSlider, setMaxOfferSlider] = useState(80000)
   const [maxMileageSlider, setMaxMileageSlider] = useState(200000)
-  const [maxAgeStop, setMaxAgeStop] = useState(2)
+  const [ageRange, setAgeRange] = useState([0, 2])
   // Later phase state
   const [biddingRadius, setBiddingRadius] = useState(175)
 
@@ -151,8 +151,8 @@ export default function SMCStrategy() {
           {phase === 'Later' ? (
             /* Later: only show LaterConcepts */
             <LaterConcepts
-              maxAgeStop={maxAgeStop}
-              onAgeStopChange={setMaxAgeStop}
+              ageRange={ageRange}
+              onAgeRangeChange={setAgeRange}
               biddingRadius={biddingRadius}
               onBiddingRadiusChange={setBiddingRadius}
             />
@@ -163,15 +163,32 @@ export default function SMCStrategy() {
                 <a href="#" style={{ fontSize: 14, color: '#333', display: 'inline-flex', alignItems: 'center', gap: 4, marginBottom: 8, textDecoration: 'none' }}>
                   ← <span style={{ textDecoration: 'underline' }}>Back</span>
                 </a>
-                <div>
-                  <h1 style={{ fontSize: 20, fontWeight: 700, color: '#0D1722', marginBottom: 4, fontFamily: "'RundDisplay', sans-serif" }}>
-                    Sell My Car Strategy
-                  </h1>
-                  <p style={{ fontSize: 14, color: '#0D1722' }}>
-                    {phase === 'Next'
-                      ? 'Adjust your global and custom bidding rules to refine your strategy'
-                      : 'Adjust your global bidding rules to refine your strategy'}
-                  </p>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
+                  <div>
+                    <h1 style={{ fontSize: 20, fontWeight: 700, color: '#0D1722', marginBottom: 4, fontFamily: "'RundDisplay', sans-serif" }}>
+                      Sell My Car Strategy
+                    </h1>
+                    <p style={{ fontSize: 14, color: '#0D1722', marginBottom: 4 }}>
+                      {phase === 'Next'
+                        ? 'Adjust your global and custom bidding rules to refine your strategy'
+                        : 'Adjust your global bidding rules to refine your strategy'}
+                    </p>
+                    <p style={{ fontSize: 14, color: '#0D1722' }}>
+                      Setup a meeting with your product specialist to customize your bidding strategy further.
+                    </p>
+                  </div>
+                  <button style={{
+                    flexShrink: 0,
+                    padding: '8px 16px', fontSize: 14, fontWeight: 500,
+                    background: '#fff', color: '#0763D3',
+                    border: '1px solid #0763D3', borderRadius: 6,
+                    cursor: 'pointer', whiteSpace: 'nowrap',
+                  }}
+                    onMouseEnter={e => e.currentTarget.style.background = '#E4F5FE'}
+                    onMouseLeave={e => e.currentTarget.style.background = '#fff'}
+                  >
+                    Meet with specialist
+                  </button>
                 </div>
               </div>
 
@@ -199,8 +216,8 @@ export default function SMCStrategy() {
                       <GuardrailSlider
                         value={maxOfferSlider}
                         onChange={setMaxOfferSlider}
-                        min={20000} max={150000} step={1000}
-                        recLo={60000} recHi={80000}
+                        min={20000} max={200000} step={1000}
+                        recLo={60000} recHi={200000}
                         formatValue={v => `$${v / 1000}k`}
                         formatLabel={v => `$${v / 1000}k`}
                       />
@@ -247,7 +264,7 @@ export default function SMCStrategy() {
                 {phase !== 'MVP' ? (
                   <FieldBlock label="Max vehicle age" description="Vehicles older than this won't receive offers" inlineControl={
                     <div style={{ width: '55%' }}>
-                      <SnappingAgeSlider value={maxAgeStop} onChange={setMaxAgeStop} />
+                      <SnappingAgeSlider value={ageRange} onChange={setAgeRange} />
                     </div>
                   } />
                 ) : (

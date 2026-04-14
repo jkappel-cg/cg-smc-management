@@ -4,7 +4,7 @@ import GuardrailSlider from './GuardrailSlider.jsx'
 import FieldBlock from './FieldBlock.jsx'
 
 // Per-year lead distribution (sums to 100). stopIndex ties each bar to the SnappingAgeSlider stops.
-// stopIndex 0 = ≤2yr, 1 = ≤5yr, 2 = ≤10yr, 3 = all
+// stopIndex 0 = ≤2yr, 1 = ≤5yr, 2 = ≤10yr, 3 = ≤15yr, 4 = No limit
 const BARS = [
   { year: '1',  pct: 4,  stopIndex: 0 },
   { year: '2',  pct: 7,  stopIndex: 0 },
@@ -21,7 +21,7 @@ const BARS = [
   { year: '13', pct: 3,  stopIndex: 3 },
   { year: '14', pct: 2,  stopIndex: 3 },
   { year: '15', pct: 1,  stopIndex: 3 },
-  { year: '16', pct: 1,  stopIndex: 3 },
+  { year: '16', pct: 1,  stopIndex: 4 },
 ]
 const MAX_BAR_PCT = Math.max(...BARS.map(b => b.pct))
 const CHART_HEIGHT = 100
@@ -29,9 +29,10 @@ const CHART_HEIGHT = 100
 // X-axis tick positions — show year labels only at key breakpoints
 const TICKS = ['1', '5', '10', '15']
 
-export default function LaterConcepts({ maxAgeStop, onAgeStopChange, biddingRadius, onBiddingRadiusChange }) {
+export default function LaterConcepts({ ageRange, onAgeRangeChange, biddingRadius, onBiddingRadiusChange }) {
+  const hiIdx = ageRange[1]
   const coveredPct = BARS
-    .filter(b => b.stopIndex <= maxAgeStop)
+    .filter(b => b.stopIndex <= hiIdx)
     .reduce((sum, b) => sum + b.pct, 0)
 
   return (
@@ -69,7 +70,7 @@ export default function LaterConcepts({ maxAgeStop, onAgeStopChange, biddingRadi
             marginBottom: 6,
           }}>
             {BARS.map(bar => {
-              const included = bar.stopIndex <= maxAgeStop
+              const included = bar.stopIndex <= hiIdx
               const barH = Math.round((bar.pct / MAX_BAR_PCT) * CHART_HEIGHT)
               return (
                 <div
@@ -116,7 +117,7 @@ export default function LaterConcepts({ maxAgeStop, onAgeStopChange, biddingRadi
           </div>
 
           {/* Age slider */}
-          <SnappingAgeSlider value={maxAgeStop} onChange={onAgeStopChange} />
+          <SnappingAgeSlider value={ageRange} onChange={onAgeRangeChange} />
         </div>
       </SectionCard>
 

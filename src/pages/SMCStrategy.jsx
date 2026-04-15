@@ -99,7 +99,7 @@ export default function SMCStrategy() {
   const [maxOfferRaw, setMaxOfferRaw] = useState(null)
   const [maxMileageSlider, setMaxMileageSlider] = useState(200000)
   const [maxMileageRaw, setMaxMileageRaw] = useState(null)
-  const [ageRange, setAgeRange] = useState([0, 2])
+  const [ageRange, setAgeRange] = useState([2, 5])
   // Later phase state
   const [biddingRadius, setBiddingRadius] = useState(175)
 
@@ -158,6 +158,16 @@ export default function SMCStrategy() {
               biddingRadius={biddingRadius}
               onBiddingRadiusChange={setBiddingRadius}
             />
+          ) : phase === 'MVP' ? (
+            /* MVP: scrappy placeholder */
+            <div style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              minHeight: 300,
+              fontSize: 16, color: '#5E6976', fontStyle: 'italic',
+              textAlign: 'center',
+            }}>
+              Use existing onboarding flow to build a scrappy v1 version!
+            </div>
           ) : (
             <>
               {/* Page header */}
@@ -275,7 +285,7 @@ export default function SMCStrategy() {
                 {phase !== 'MVP' ? (
                   <FieldBlock label="Max vehicle age" description="Vehicles older than this won't receive offers" inlineControl={
                     <div style={{ width: '55%' }}>
-                      <SnappingAgeSlider value={ageRange} onChange={setAgeRange} showModelYears />
+                      <SnappingAgeSlider value={ageRange} onChange={setAgeRange} showModelYears reversed />
                     </div>
                   } />
                 ) : (

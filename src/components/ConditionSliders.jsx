@@ -6,9 +6,8 @@ const FACTOR = 250
 
 const SECTIONS = [
   {
-    header: 'Major impact',
     items: [
-      { key: 'notDriveable', label: 'Not driveable', badge: true },
+      { key: 'notDriveable', label: 'Not driveable', default: 2000, recLo: 1500, recMax: 3000, defaultUnit: '$' },
       { key: 'badTires',    label: 'Bad tires',         default: 800,  recLo: 600, recMax: 1000, defaultUnit: '$' },
       { key: 'windshield',  label: 'Windshield damage', default: 700,  recLo: 500, recMax: 900,  defaultUnit: '$' },
       { key: 'fadedPaint',  label: 'Faded paint',       default: 750,  recLo: 500, recMax: 1000, defaultUnit: '$' },
@@ -19,7 +18,6 @@ const SECTIONS = [
     ],
   },
   {
-    header: 'Moderate impact',
     items: [
       { key: 'roughCondition', label: 'Rough condition',   default: 300, recLo: 200, recMax: 500, defaultUnit: '$' },
       { key: 'smoker',         label: 'Smoker',            default: 300, recLo: 150, recMax: 400, defaultUnit: '$' },
@@ -29,7 +27,6 @@ const SECTIONS = [
     ],
   },
   {
-    header: 'Minor impact',
     items: [
       { key: 'scratches', label: 'Scratches', default: 100, recLo: 50, recMax: 200, defaultUnit: '$' },
       { key: 'dings',     label: 'Dings',     default: 100, recLo: 50, recMax: 200, defaultUnit: '$' },
@@ -38,7 +35,6 @@ const SECTIONS = [
     ],
   },
   {
-    header: 'No impact',
     items: [
       { key: 'aftermarket', label: 'Aftermarket parts',   static: true, default: 100, recLo: 50, recMax: 200, defaultUnit: '$' },
       { key: 'fadingPaint', label: 'Fading paint',        static: true, default: 100, recLo: 50, recMax: 200, defaultUnit: '$' },
@@ -50,26 +46,31 @@ const SECTIONS = [
 function initValues() {
   const vals = {}
   for (const s of SECTIONS) for (const item of s.items)
-    if (!item.badge) vals[item.key] = item.static ? 0 : item.default
+    vals[item.key] = item.static ? 0 : item.default
   return vals
 }
 
 function initUnits() {
   const u = {}
   for (const s of SECTIONS) for (const item of s.items)
-    if (!item.badge) u[item.key] = item.defaultUnit || '$'
+    u[item.key] = item.defaultUnit || '$'
   return u
+}
+
+function initStaticExpanded() {
+  const e = {}
+  for (const s of SECTIONS) for (const item of s.items)
+    if (item.static) e[item.key] = true
+  return e
 }
 
 // Get slider config (min/max/recLo/recHi/step) for item in a given unit
 function getConfig(item, unit) {
   if (item.dollarDefault) {
-    // Accidents: explicit values for each unit
     if (unit === '%') return { min: 0, max: 30,   step: 1,   recLo: item.recLo,       recHi: item.recMax }
     else              return { min: 0, max: item.dollarRecMax * 2, step: 50, recLo: item.dollarRecLo, recHi: item.dollarRecMax }
   }
   if (unit === '$') return { min: 0, max: item.recMax * 2, step: 50, recLo: item.recLo, recHi: item.recMax }
-  // % mode for $-native items: convert via FACTOR
   const pLo  = Math.round((item.recLo  / FACTOR) * 10) / 10
   const pHi  = Math.round((item.recMax / FACTOR) * 10) / 10
   const pMax = Math.round((item.recMax * 2 / FACTOR) * 10) / 10
@@ -113,13 +114,66 @@ function UnitToggle({ unit, onChange }) {
   )
 }
 
+const TOOLTIP_TEXT = {
+  above: 'This deduction is above the recommended range. High deductions can make your offers less competitive with sellers.',
+  below: 'This deduction is below the recommended range. A lower deduction may undervalue the condition impact on your offer.',
+}
+
+function BadgeWithTooltip({ text, bg }) {
+  const [show, setShow] = useState(false)
+  const isOut = text === 'Above recommended' || text === 'Below recommended'
+  const tipText = text === 'Above recommended' ? TOOLTIP_TEXT.above : TOOLTIP_TEXT.below
+
+  return (
+    <span
+      style={{ position: 'relative', display: 'inline-block' }}
+      onMouseEnter={() => isOut && setShow(true)}
+      onMouseLeave={() => setShow(false)}
+    >
+      <span style={{
+        fontSize: 12, background: bg, color: '#0D1722',
+        borderRadius: 4, padding: '2px 8px', fontWeight: 400,
+        whiteSpace: 'nowrap',
+        ...(isOut ? {
+          textDecoration: 'underline dotted',
+          textDecorationColor: '#0D1722',
+          textUnderlineOffset: 2,
+          cursor: 'help',
+        } : {}),
+      }}>
+        {text}
+      </span>
+      {show && (
+        <div style={{
+          position: 'absolute', bottom: 'calc(100% + 6px)', left: 0,
+          zIndex: 20, width: 230,
+          background: '#0D1722', color: '#fff',
+          fontSize: 12, lineHeight: 1.5,
+          padding: '8px 10px', borderRadius: 6,
+          boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+          pointerEvents: 'none',
+        }}>
+          {tipText}
+          <div style={{
+            position: 'absolute', top: '100%', left: 12,
+            width: 0, height: 0,
+            borderLeft: '5px solid transparent',
+            borderRight: '5px solid transparent',
+            borderTop: '5px solid #0D1722',
+          }} />
+        </div>
+      )}
+    </span>
+  )
+}
+
 const Divider = () => <div style={{ height: 1, background: '#f0f0f0', width: '100%', marginTop: 12 }} />
 
 export default function ConditionSliders() {
   const [values, setValues]             = useState(initValues)
   const [units, setUnits]               = useState(initUnits)
   const [rawInputs, setRawInputs]       = useState({})
-  const [staticExpanded, setStaticExpanded] = useState({})
+  const [staticExpanded, setStaticExpanded] = useState(initStaticExpanded)
 
   function set(key, val) { setValues(v => ({ ...v, [key]: val })) }
 
@@ -197,33 +251,10 @@ export default function ConditionSliders() {
       </p>
 
       {SECTIONS.map((section, si) => (
-        <div key={section.header}>
-          {/* Section header */}
-          <div style={{
-            fontSize: 14, fontWeight: 600, color: '#0D1722',
-            paddingTop: 4, paddingBottom: 6,
-            marginTop: si > 0 ? 36 : 0,
-          }}>
-            {section.header}
-          </div>
-
+        <div key={si}>
           {section.items.map((item, idx) => {
-            const isLast = idx === section.items.length - 1
-
-            /* ── "Not driveable" — no offer ── */
-            if (item.badge) return (
-              <div key={item.key} style={{ padding: '12px 0' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: 14, fontWeight: 400, color: '#0D1722' }}>{item.label}</span>
-                  <div style={{ width: '55%' }}>
-                    <span style={{ fontSize: 12, background: '#FFE2E2', color: '#0D1722', borderRadius: 4, padding: '2px 8px', fontWeight: 400 }}>
-                      No offer made
-                    </span>
-                  </div>
-                </div>
-                {!isLast && <Divider />}
-              </div>
-            )
+            const isLast = idx === section.items.length - 1 && si === SECTIONS.length - 1
+            const isLastInSection = idx === section.items.length - 1
 
             /* ── Static "no adjustment" items ── */
             if (item.static) {
@@ -236,24 +267,24 @@ export default function ConditionSliders() {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span style={{ fontSize: 14, fontWeight: 400, color: '#0D1722' }}>{item.label}</span>
                       <div style={{ width: '55%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontSize: 12, color: '#5E6976' }}>No adjustment</span>
+                        <span style={{ fontSize: 12, background: '#E4F5FE', color: '#0D1722', borderRadius: 4, padding: '2px 8px', fontWeight: 400 }}>
+                          No deduction
+                        </span>
                         <UnitToggle unit={null} onChange={u => handleStaticExpand(item, u)} />
                       </div>
                     </div>
-                    {!isLast && <Divider />}
+                    {!isLastInSection && <Divider />}
                   </div>
                 )
               }
 
-              // Expanded — label left, full slider right
               const val = values[item.key]
               const cfg = getConfig(item, unit)
               const { formatValue, formatLabel } = getFmt(unit)
               const inRange = val >= cfg.recLo && val <= cfg.recHi
-              const badgeText = val === 0 ? 'No adjustment' : inRange ? 'Recommended' : val < cfg.recLo ? 'Below recommended' : 'Above recommended'
-              const badgeBg   = val === 0 ? '#F0F2F4' : inRange ? '#DCF7DD' : '#FFF1C0'
-              const badgeColor = val === 0 ? '#5E6976' : '#0D1722'
-              const inputDisplay = item.key in rawInputs ? rawInputs[item.key] : (unit === '$' ? `$${val}` : `${val}%`)
+              const badgeText = val === 0 ? 'No deduction' : inRange ? 'Recommended' : val < cfg.recLo ? 'Below recommended' : 'Above recommended'
+              const badgeBg   = val === 0 ? '#E4F5FE' : inRange ? '#DCF7DD' : '#FFF1C0'
+              const inputDisplay = item.key in rawInputs ? rawInputs[item.key] : (unit === '$' ? `$${val.toLocaleString()}` : `${val}%`)
 
               return (
                 <div key={item.key} style={{ padding: '12px 0' }}>
@@ -261,9 +292,7 @@ export default function ConditionSliders() {
                     <span style={{ fontSize: 14, fontWeight: 400, color: '#0D1722' }}>{item.label}</span>
                     <div style={{ width: '55%' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                        <span style={{ fontSize: 12, background: badgeBg, color: badgeColor, borderRadius: 4, padding: '2px 8px', fontWeight: 400, whiteSpace: 'nowrap' }}>
-                          {badgeText}
-                        </span>
+                        <BadgeWithTooltip text={badgeText} bg={badgeBg} />
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                           <UnitToggle unit={unit} onChange={u => handleStaticExpand(item, u)} />
                           <input
@@ -290,7 +319,7 @@ export default function ConditionSliders() {
                       />
                     </div>
                   </div>
-                  {!isLast && <Divider />}
+                  {!isLastInSection && <Divider />}
                 </div>
               )
             }
@@ -301,22 +330,17 @@ export default function ConditionSliders() {
             const cfg  = getConfig(item, unit)
             const { formatValue, formatLabel } = getFmt(unit)
             const inRange = val >= cfg.recLo && val <= cfg.recHi
-            const badgeText = val === 0 ? 'No adjustment' : inRange ? 'Recommended' : val < cfg.recLo ? 'Below recommended' : 'Above recommended'
-            const badgeBg   = val === 0 ? '#F0F2F4' : inRange ? '#DCF7DD' : '#FFF1C0'
-            const badgeColor = val === 0 ? '#5E6976' : '#0D1722'
-            const inputDisplay = item.key in rawInputs ? rawInputs[item.key] : String(val)
+            const badgeText = val === 0 ? 'No deduction' : inRange ? 'Recommended' : val < cfg.recLo ? 'Below recommended' : 'Above recommended'
+            const badgeBg   = val === 0 ? '#E4F5FE' : inRange ? '#DCF7DD' : '#FFF1C0'
+            const inputDisplay = item.key in rawInputs ? rawInputs[item.key] : (unit === '$' ? `$${val.toLocaleString()}` : `${val}%`)
 
             return (
               <div key={item.key} style={{ padding: '12px 0' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                  {/* Left: label */}
                   <span style={{ fontSize: 14, fontWeight: 400, color: '#0D1722' }}>{item.label}</span>
-                  {/* Right: badge upper-left, toggle+input upper-right, slider below */}
                   <div style={{ width: '55%' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                      <span style={{ fontSize: 12, background: badgeBg, color: badgeColor, borderRadius: 4, padding: '2px 8px', fontWeight: 400, whiteSpace: 'nowrap' }}>
-                        {badgeText}
-                      </span>
+                      <BadgeWithTooltip text={badgeText} bg={badgeBg} />
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         <UnitToggle unit={unit} onChange={u => changeUnit(item, u)} />
                         <input
@@ -342,10 +366,15 @@ export default function ConditionSliders() {
                     />
                   </div>
                 </div>
-                {!isLast && <Divider />}
+                {!isLastInSection && <Divider />}
               </div>
             )
           })}
+
+          {/* Section separator (between sections, not after last) */}
+          {si < SECTIONS.length - 1 && (
+            <div style={{ height: 1, background: '#E8EBED', width: '100%', margin: '8px 0 20px' }} />
+          )}
         </div>
       ))}
     </div>

@@ -178,7 +178,7 @@ export default function SMCStrategy() {
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
                   <div>
                     <h1 style={{ fontSize: 20, fontWeight: 700, color: '#0D1722', marginBottom: 4, fontFamily: "'RundDisplay', sans-serif" }}>
-                      Sell My Car Strategy
+                      Sell My Car Bidding Strategy
                     </h1>
                     <p style={{ fontSize: 14, color: '#0D1722' }}>
                       Adjust your global and custom bidding rules to refine your strategy. Setup a meeting with your product specialist to customize your bidding strategy further.
@@ -223,15 +223,15 @@ export default function SMCStrategy() {
                       <GuardrailSlider
                         value={maxOfferSlider}
                         onChange={v => { setMaxOfferSlider(v); setMaxOfferRaw(null) }}
-                        min={20000} max={200000} step={1000}
+                        min={20000} max={250000} step={1000}
                         recLo={60000} recHi={200000}
-                        formatValue={v => `$${v / 1000}k`}
-                        formatLabel={v => `$${v / 1000}k`}
+                        formatValue={v => v >= 250000 ? '$250,000+' : `$${v.toLocaleString()}`}
+                        formatLabel={v => v >= 250000 ? '$250k+' : `$${v / 1000}k`}
                         rawInput={maxOfferRaw}
                         onRawInput={setMaxOfferRaw}
                         onRawBlur={raw => {
-                          const num = parseFloat(raw.replace(/[^0-9.]/g, '')) * (raw.includes('k') || raw.includes('K') ? 1000 : 1)
-                          if (!isNaN(num)) setMaxOfferSlider(Math.max(20000, Math.min(200000, Math.round(num / 1000) * 1000)))
+                          const num = parseFloat(raw.replace(/[^0-9.,+$]/g, '').replace(/,/g, ''))
+                          if (!isNaN(num)) setMaxOfferSlider(Math.max(20000, Math.min(250000, Math.round(num / 1000) * 1000)))
                           setMaxOfferRaw(null)
                         }}
                       />
@@ -259,12 +259,12 @@ export default function SMCStrategy() {
                         onChange={v => { setMaxMileageSlider(v); setMaxMileageRaw(null) }}
                         min={50000} max={300000} step={5000}
                         recLo={50000} recHi={200000}
-                        formatValue={v => `${v / 1000}k mi`}
+                        formatValue={v => `${v.toLocaleString()} mi`}
                         formatLabel={v => `${v / 1000}k`}
                         rawInput={maxMileageRaw}
                         onRawInput={setMaxMileageRaw}
                         onRawBlur={raw => {
-                          const num = parseFloat(raw.replace(/[^0-9.]/g, '')) * (raw.toLowerCase().includes('k') ? 1000 : 1)
+                          const num = parseFloat(raw.replace(/[^0-9.,]/g, '').replace(/,/g, ''))
                           if (!isNaN(num)) setMaxMileageSlider(Math.max(50000, Math.min(300000, Math.round(num / 5000) * 5000)))
                           setMaxMileageRaw(null)
                         }}

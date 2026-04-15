@@ -1,8 +1,11 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 
 const ALL_MAKES = [
-  'Toyota', 'Honda', 'Ford', 'Chevrolet', 'BMW', 'Mercedes-Benz',
-  'Audi', 'Lexus', 'Nissan', 'Hyundai', 'Kia', 'Subaru', 'Jeep', 'Ram', 'GMC',
+  'Acura', 'Audi', 'BMW', 'Buick', 'Cadillac', 'Chevrolet', 'Chrysler',
+  'Dodge', 'Ford', 'Genesis', 'GMC', 'Honda', 'Hyundai', 'Infiniti',
+  'Jeep', 'Kia', 'Land Rover', 'Lexus', 'Lincoln', 'Mazda',
+  'Mercedes-Benz', 'Mitsubishi', 'Nissan', 'Ram', 'Subaru',
+  'Tesla', 'Toyota', 'Volkswagen', 'Volvo',
 ]
 
 export function MakesToggle({ mode, onChange }) {
@@ -41,103 +44,159 @@ export function MakesToggle({ mode, onChange }) {
 }
 
 export default function VehicleMakes({ excluded, onChange }) {
-  const [search, setSearch] = useState('')
+  const [query, setQuery]       = useState('')
+  const [open, setOpen]         = useState(false)
+  const [focused, setFocused]   = useState(false)
+  const containerRef            = useRef()
+  const inputRef                = useRef()
 
-  const filtered = search.trim()
-    ? ALL_MAKES.filter(m => m.toLowerCase().includes(search.toLowerCase()))
+  const suggestions = query.trim().length > 0
+    ? ALL_MAKES.filter(m =>
+        m.toLowerCase().includes(query.toLowerCase()) &&
+        !excluded.includes(m)
+      )
     : []
 
-  function toggleExclude(make) {
-    if (excluded.includes(make)) {
-      onChange(excluded.filter(m => m !== make))
-    } else {
-      onChange([...excluded, make])
-    }
+  function addMake(make) {
+    onChange([...excluded, make])
+    setQuery('')
+    inputRef.current?.focus()
   }
 
+  function removeMake(make) {
+    onChange(excluded.filter(m => m !== make))
+  }
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    function onPointerDown(e) {
+      if (!containerRef.current?.contains(e.target)) setOpen(false)
+    }
+    document.addEventListener('pointerdown', onPointerDown)
+    return () => document.removeEventListener('pointerdown', onPointerDown)
+  }, [])
+
   return (
-    <div>
-      <input
-        type="text"
-        value={search}
-        onChange={e => setSearch(e.target.value)}
-        placeholder="Search makes to exclude..."
-        style={{
-          width: '100%',
-          height: 36,
-          border: '1px solid #cccccc',
-          borderRadius: 4,
-          fontSize: 14,
-          padding: '6px 10px',
-          marginBottom: 10,
-          outline: 'none',
-        }}
-        onFocus={e => { e.target.style.borderColor = '#0066cc' }}
-        onBlur={e => { e.target.style.borderColor = '#cccccc' }}
-      />
+    <div ref={containerRef} style={{ marginTop: 12 }}>
 
-      {filtered.length > 0 && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
-          {filtered.map(make => {
-            const isExcluded = excluded.includes(make)
-            return (
-              <button
-                key={make}
-                onClick={() => toggleExclude(make)}
-                style={{
-                  padding: '4px 10px',
-                  fontSize: 14,
-                  borderRadius: 4,
-                  border: isExcluded ? '1px solid #ffaaaa' : '1px solid #cccccc',
-                  background: isExcluded ? '#ffd6d6' : '#f5f5f5',
-                  color: isExcluded ? '#cc0000' : '#0D1722',
-                  textDecoration: isExcluded ? 'line-through' : 'none',
-                  opacity: isExcluded ? 0.75 : 1,
-                  cursor: 'pointer',
-                }}
-              >
-                {make}
-              </button>
-            )
-          })}
-        </div>
-      )}
+      {/* Label */}
+      <div style={{ fontSize: 13, fontWeight: 500, color: '#0D1722', marginBottom: 6 }}>
+        Search makes to exclude
+      </div>
 
-      {excluded.length > 0 && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
-          {excluded.map(make => (
-            <button
+      {/* Search input */}
+      <div style={{
+        position: 'relative',
+        display: 'flex', alignItems: 'center',
+        border: `1px solid ${focused ? '#0763D3' : '#C8CDD2'}`,
+        borderRadius: 6,
+        background: '#fff',
+        padding: '0 10px',
+        height: 40,
+        boxSizing: 'border-box',
+      }}>
+        {/* Search icon */}
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0, marginRight: 8, color: '#5E6976' }}>
+          <circle cx="7" cy="7" r="5" stroke="currentColor" strokeWidth="1.5"/>
+          <path d="M11 11L14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+        </svg>
+        <input
+          ref={inputRef}
+          type="text"
+          value={query}
+          onChange={e => { setQuery(e.target.value); setOpen(true) }}
+          onFocus={() => { setFocused(true); if (query) setOpen(true) }}
+          onBlur={() => setFocused(false)}
+          placeholder="i.e. Maseratis"
+          style={{
+            flex: 1, border: 'none', outline: 'none',
+            fontSize: 14, color: '#0D1722', background: 'transparent',
+          }}
+        />
+        {/* Clear button */}
+        {query.length > 0 && (
+          <button
+            onPointerDown={e => { e.preventDefault(); setQuery(''); setOpen(false); inputRef.current?.focus() }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: '#5E6976', display: 'flex' }}
+          >
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M2 2L12 12M12 2L2 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
+          </button>
+        )}
+      </div>
+
+      {/* Dropdown suggestions */}
+      {open && suggestions.length > 0 && (
+        <div style={{
+          border: '1px solid #e0e0e0',
+          borderRadius: 6,
+          background: '#fff',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+          marginTop: 4,
+          maxHeight: 200,
+          overflowY: 'auto',
+          zIndex: 10,
+          position: 'relative',
+        }}>
+          {suggestions.map(make => (
+            <div
               key={make}
-              onClick={() => toggleExclude(make)}
-              title="Click to re-include"
+              onPointerDown={e => { e.preventDefault(); addMake(make); setOpen(false) }}
               style={{
-                padding: '4px 10px',
-                fontSize: 14,
-                borderRadius: 4,
-                border: '1px solid #ffaaaa',
-                background: '#ffd6d6',
-                color: '#cc0000',
-                textDecoration: 'line-through',
-                opacity: 0.75,
+                padding: '9px 14px',
+                fontSize: 14, color: '#0D1722',
                 cursor: 'pointer',
               }}
+              onMouseEnter={e => e.currentTarget.style.background = '#F4F6F9'}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
             >
-              {make} ×
-            </button>
+              {make}
+            </div>
           ))}
         </div>
       )}
 
-      {excluded.length >= 5 && (
+      {/* No results */}
+      {open && query.trim().length > 0 && suggestions.length === 0 && (
         <div style={{
-          padding: '10px 14px',
-          background: '#FFF1C0',
-          border: '1px solid #f5c800',
-          borderRadius: 6,
-          fontSize: 14,
-          color: '#0D1722',
+          border: '1px solid #e0e0e0', borderRadius: 6, background: '#fff',
+          marginTop: 4, padding: '9px 14px', fontSize: 14, color: '#9AA3AD',
         }}>
-          ⚠ Excluding vehicle makes may reduce the number of leads you receive.
+          No makes found
+        </div>
+      )}
+
+      {/* Excluded pills */}
+      {excluded.length > 0 && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 10 }}>
+          {excluded.map(make => (
+            <div key={make} style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              padding: '5px 10px',
+              background: '#F0F2F4', borderRadius: 20,
+              fontSize: 14, color: '#0D1722',
+            }}>
+              {make}
+              <button
+                onClick={() => removeMake(make)}
+                style={{
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  padding: 0, display: 'flex', alignItems: 'center',
+                  color: '#5E6976', lineHeight: 1, fontSize: 16,
+                }}
+              >
+                ×
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Validation hint — only when no makes selected yet */}
+      {excluded.length === 0 && (
+        <div style={{ fontSize: 12, color: '#9AA3AD', marginTop: 8 }}>
+          Select at least one make to exclude
         </div>
       )}
     </div>

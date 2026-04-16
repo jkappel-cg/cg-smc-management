@@ -84,7 +84,7 @@ const MAX_AGE_OPTIONS = [
 ]
 
 export default function SMCStrategy() {
-  const [phase, setPhase] = useState('MVP')
+  const [phase, setPhase] = useState('Next')
 
   // Form state
   const [bookValue, setBookValue] = useState('cargurus')

@@ -1,3 +1,4 @@
+import BadgeWithTooltip from './BadgeWithTooltip.jsx'
 import SectionCard from './SectionCard.jsx'
 import SnappingAgeSlider from './SnappingAgeSlider.jsx'
 import GuardrailSlider from './GuardrailSlider.jsx'
@@ -69,12 +70,7 @@ export default function LaterConcepts({ ageRange, onAgeRangeChange, biddingRadiu
 
           {/* Badge + range — above the chart */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-            <span style={{
-              fontSize: 12, background: badgeBg, color: '#0D1722',
-              borderRadius: 4, padding: '2px 8px', fontWeight: 400,
-            }}>
-              {badgeText}
-            </span>
+            <BadgeWithTooltip text={badgeText} bg={badgeBg} />
             <span style={{ fontSize: 14, fontWeight: 400, color: '#0D1722' }}>
               {displayText}
             </span>

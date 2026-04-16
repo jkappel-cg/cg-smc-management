@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import GuardrailSlider from './GuardrailSlider.jsx'
+import BadgeWithTooltip from './BadgeWithTooltip.jsx'
 
 // Conversion factor: $250 per 1% (based on ~$25k average vehicle value)
 const FACTOR = 250
@@ -114,59 +115,6 @@ function UnitToggle({ unit, onChange }) {
   )
 }
 
-const TOOLTIP_TEXT = {
-  above: 'This deduction is above the recommended range. High deductions can make your offers less competitive with sellers.',
-  below: 'This deduction is below the recommended range. A lower deduction may undervalue the condition impact on your offer.',
-}
-
-function BadgeWithTooltip({ text, bg }) {
-  const [show, setShow] = useState(false)
-  const isOut = text === 'Above recommended' || text === 'Below recommended'
-  const tipText = text === 'Above recommended' ? TOOLTIP_TEXT.above : TOOLTIP_TEXT.below
-
-  return (
-    <span
-      style={{ position: 'relative', display: 'inline-block' }}
-      onMouseEnter={() => isOut && setShow(true)}
-      onMouseLeave={() => setShow(false)}
-    >
-      <span style={{
-        fontSize: 12, background: bg, color: '#0D1722',
-        borderRadius: 4, padding: '2px 8px', fontWeight: 400,
-        whiteSpace: 'nowrap',
-        ...(isOut ? {
-          textDecoration: 'underline dotted',
-          textDecorationColor: '#0D1722',
-          textUnderlineOffset: 2,
-          cursor: 'help',
-        } : {}),
-      }}>
-        {text}
-      </span>
-      {show && (
-        <div style={{
-          position: 'absolute', bottom: 'calc(100% + 6px)', left: 0,
-          zIndex: 20, width: 230,
-          background: '#0D1722', color: '#fff',
-          fontSize: 12, lineHeight: 1.5,
-          padding: '8px 10px', borderRadius: 6,
-          boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-          pointerEvents: 'none',
-        }}>
-          {tipText}
-          <div style={{
-            position: 'absolute', top: '100%', left: 12,
-            width: 0, height: 0,
-            borderLeft: '5px solid transparent',
-            borderRight: '5px solid transparent',
-            borderTop: '5px solid #0D1722',
-          }} />
-        </div>
-      )}
-    </span>
-  )
-}
-
 const Divider = () => <div style={{ height: 1, background: '#f0f0f0', width: '100%', marginTop: 12 }} />
 
 export default function ConditionSliders() {
@@ -243,11 +191,8 @@ export default function ConditionSliders() {
 
   return (
     <div>
-      <p style={{ fontSize: 14, color: '#5E6976', marginBottom: 4 }}>
-        We automatically adjust your offers based on the condition the consumer selects.
-      </p>
-      <p style={{ fontSize: 14, color: '#0D1722', marginBottom: 20 }}>
-        Example: If a consumer selects "Bad tires," your offer is reduced by $800 based on the rules below.
+      <p style={{ fontSize: 14, color: '#5E6976', marginBottom: 20 }}>
+        We automatically adjust your offers based on the condition the consumer selects. Example: If a consumer selects "Bad tires," your offer is reduced by $800 based on the rules below.
       </p>
 
       {SECTIONS.map((section, si) => (
@@ -344,7 +289,7 @@ export default function ConditionSliders() {
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         <UnitToggle unit={unit} onChange={u => changeUnit(item, u)} />
                         <input
-                          type="number"
+                          type="text"
                           value={inputDisplay}
                           onChange={e => handleInputChange(item.key, e.target.value)}
                           onBlur={e => handleInputBlur(item, e.target.value)}

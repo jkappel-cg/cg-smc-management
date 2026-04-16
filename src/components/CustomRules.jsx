@@ -26,7 +26,6 @@ const defaultForm = () => ({
   reducePercent: 10,
   increasePercent: 5,
   conditions: [defaultCondition()],
-  notes: '',
   enabled: true,
 })
 
@@ -183,9 +182,16 @@ function ConditionRow({ cond, idx, total, onChange, onRemove, inputStyle }) {
         {total > 1 && (
           <button onClick={() => onRemove(idx)} title="Remove condition" style={{
             background: 'none', border: 'none', cursor: 'pointer',
-            color: '#5E6976', padding: '4px 6px', display: 'flex', alignItems: 'center',
-            fontSize: 16, lineHeight: 1,
-          }}>×</button>
+            padding: 0, display: 'flex', alignItems: 'center',
+          }}>
+            <span style={{
+              width: 20, height: 20, borderRadius: '50%',
+              border: '1px solid #5E6976',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 14, color: '#5E6976', lineHeight: 1,
+              userSelect: 'none',
+            }}>×</span>
+          </button>
         )}
       </div>
 
@@ -299,11 +305,31 @@ export default function CustomRules() {
       {/* Card header */}
       <div style={{ padding: '12px 24px', borderBottom: '1px solid #e0e0e0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 16, fontWeight: 600, color: '#0D1722' }}>Custom rules</span>
-          {rules.length > 0 && (
-            <span style={{ fontSize: 12, fontWeight: 500, background: '#E8EBED', color: '#5E6976', borderRadius: 10, padding: '1px 7px' }}>
-              {rules.length}
-            </span>
+          {editingId !== null ? (
+            <>
+              <button onClick={closeForm} style={{
+                background: 'none', border: 'none', cursor: 'pointer',
+                color: '#5E6976', padding: 0, display: 'flex', alignItems: 'center', gap: 4, fontSize: 14,
+              }}>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M10 3L5 8L10 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                Custom rules
+              </button>
+              <span style={{ color: '#C8CDD2', fontSize: 14 }}>/</span>
+              <span style={{ fontSize: 14, fontWeight: 600, color: '#0D1722' }}>
+                {editingId === 'new' ? 'New rule' : 'Edit rule'}
+              </span>
+            </>
+          ) : (
+            <>
+              <span style={{ fontSize: 16, fontWeight: 600, color: '#0D1722' }}>Custom rules</span>
+              {rules.length > 0 && (
+                <span style={{ fontSize: 12, fontWeight: 500, background: '#E8EBED', color: '#5E6976', borderRadius: 10, padding: '1px 7px' }}>
+                  {rules.length}
+                </span>
+              )}
+            </>
           )}
         </div>
         {editingId === null && (
@@ -433,7 +459,9 @@ export default function CustomRules() {
           {/* Step 3 — Amount (shown once at least one condition is filled) */}
           {form.action && conditionsFilled && (
             <div style={{ marginBottom: 24 }}>
-              <SectionLabel step="3">By how much?</SectionLabel>
+              <SectionLabel step="3">
+                {form.action === 'reduce' ? 'How much do you want to reduce offers by?' : 'How much do you want to increase offers by?'}
+              </SectionLabel>
               <ChipGroup
                 value={form.action === 'reduce' ? form.reducePercent : form.increasePercent}
                 onChange={v => set(form.action === 'reduce' ? 'reducePercent' : 'increasePercent', v)}
@@ -454,25 +482,6 @@ export default function CustomRules() {
               <span style={{ fontSize: 14, color: '#0D1722', marginLeft: 8 }}>{summary}</span>
             </div>
           )}
-
-          {/* Notes */}
-          <div style={{ marginBottom: 20 }}>
-            <div style={{ fontSize: 14, color: '#0D1722', marginBottom: 6 }}>Notes <span style={{ color: '#9AA3AD' }}>(optional)</span></div>
-            <textarea
-              value={form.notes}
-              onChange={e => set('notes', e.target.value)}
-              placeholder="Add context for your team..."
-              rows={3}
-              style={{
-                width: '100%', padding: '8px 10px', fontSize: 14,
-                color: '#0D1722', border: '1px solid #cccccc',
-                borderRadius: 4, outline: 'none', resize: 'vertical',
-                fontFamily: 'inherit', boxSizing: 'border-box',
-              }}
-              onFocus={e => e.target.style.borderColor = '#0763D3'}
-              onBlur={e => e.target.style.borderColor = '#cccccc'}
-            />
-          </div>
 
           {/* Save / Cancel */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

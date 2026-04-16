@@ -1,3 +1,5 @@
+import BadgeWithTooltip from './BadgeWithTooltip.jsx'
+
 export default function GuardrailSlider({
   value, onChange, min, max, step = 1,
   recLo, recHi, formatValue, formatLabel, conditionLabel, noHeader = false,
@@ -21,11 +23,7 @@ export default function GuardrailSlider({
 
   const fmt = formatLabel ?? formatValue
 
-  const badge = (
-    <span style={{ fontSize: 12, background: badgeBg, color: '#0D1722', borderRadius: 4, padding: '2px 8px', fontWeight: 400, whiteSpace: 'nowrap' }}>
-      {badgeText}
-    </span>
-  )
+  const badge = <BadgeWithTooltip text={badgeText} bg={badgeBg} />
 
   return (
     <div>

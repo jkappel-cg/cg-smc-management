@@ -1,4 +1,5 @@
 import { useRef } from 'react'
+import BadgeWithTooltip from './BadgeWithTooltip.jsx'
 
 // Forward direction (left=newest, right=oldest) — used by LaterConcepts
 const AGE_YEARS  = [2, 5, 10, 15, null]
@@ -123,23 +124,13 @@ export default function SnappingAgeSlider({
               <span style={{ fontSize: 12, fontWeight: 400, color: '#0D1722' }}>{primaryText}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
-              <span style={{
-                fontSize: 12, background: badgeBg, color: '#0D1722',
-                borderRadius: 4, padding: '2px 8px', fontWeight: 400,
-              }}>
-                {badgeText}
-              </span>
+              <BadgeWithTooltip text={badgeText} bg={badgeBg} />
             </div>
           </div>
         ) : (
           /* Age mode: badge left, range right */
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-            <span style={{
-              fontSize: 12, background: badgeBg, color: '#0D1722',
-              borderRadius: 4, padding: '2px 8px', fontWeight: 400,
-            }}>
-              {badgeText}
-            </span>
+            <BadgeWithTooltip text={badgeText} bg={badgeBg} />
             <span style={{ fontSize: 14, fontWeight: 400, color: '#0D1722' }}>{primaryText}</span>
           </div>
         )
